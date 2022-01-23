@@ -8,7 +8,6 @@ class ChessCanvas {
         this.chess = chess;
         this.ctx.font = ChessCanvas.boxScale * 0.2 + 'px Arial';
         this.img = document.getElementById('sprite');
-        this.draw();
     }
     draw() {
         this.drawBackground();

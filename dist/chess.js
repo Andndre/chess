@@ -3,7 +3,7 @@ class Chess {
     constructor(fenString) {
         this.board = [];
         this.availableMoves = [];
-        this.firstPlayer = fenString[0] === fenString[0].toLowerCase() ? 'black' : 'white';
+        this.firstPlayer = fenString[0] === fenString[0].toLowerCase() ? 'white' : 'black';
         this.currentPlayer = this.firstPlayer;
         let index = 0;
         for (let row of fenString.split('/')) {
@@ -127,7 +127,7 @@ class Chess {
     isEnemy(index) {
         if (!this.board[index])
             return false;
-        return (this.board[index] == this.board[index].toLowerCase()) === (this.currentPlayer == 'black');
+        return (this.board[index] == this.board[index].toUpperCase()) === (this.currentPlayer == 'black');
     }
     isFriend(index) {
         if (!this.board[index])

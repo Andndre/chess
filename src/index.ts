@@ -1,5 +1,5 @@
 let canvas = document.getElementById('canvas') as HTMLCanvasElement;
-let chess = new Chess('rnbqkbnr/pp1ppppp/3R4/2p5/4P3/1P6/1PPP1PPP/RNBQKBNR');
+let chess = new Chess('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
 let chessCanvas = new ChessCanvas(chess, canvas);
 
 canvas.addEventListener('click', (e) => {

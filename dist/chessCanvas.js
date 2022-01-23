@@ -8,9 +8,7 @@ class ChessCanvas {
         this.chess = chess;
         this.ctx.font = ChessCanvas.boxScale * 0.2 + 'px Arial';
         this.img = document.getElementById('sprite');
-        // only draw the background once
-        this.drawBackground();
-        this.drawPieces();
+        this.draw();
     }
     draw() {
         this.drawBackground();
@@ -69,7 +67,7 @@ class ChessCanvas {
         }
     }
     drawPiece(name, index) {
-        let black = name == name.toUpperCase();
+        let black = name == name.toLowerCase();
         // this y-coordinate will be 0 if it is white 
         // and half the height of the sprites if it is black
         let sy = black ? 213 : 0;

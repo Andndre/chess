@@ -17,9 +17,9 @@ class Chess {
             }
         }
     }
-    move(from, to) {
-        this.board[to] = this.board[from];
-        this.board[from] = undefined;
+    move(move) {
+        this.board[move.to] = this.board[move.from];
+        this.board[move.from] = undefined;
     }
     clicked(index) {
         if (this.selectedIndex == index)
@@ -29,28 +29,23 @@ class Chess {
             && this.isFriend(index)) {
             this.selectedIndex = index;
             this.availableMoves = this.generateAvailableMoves(this.board[index], index);
-            return true;
         }
         if (this.availableMoves.indexOf(index) != -1) {
-            this.move(this.selectedIndex, index);
+            this.move({
+                from: this.selectedIndex,
+                to: index
+            });
             this.selectedIndex = undefined;
             this.availableMoves = [];
             this.currentPlayer = this.currentPlayer == 'black' ? 'white' : 'black';
-            return true;
         }
-        return false;
-    }
-    checkAvailabeMove(index, result) {
-        if (!this.board[index]) {
-            result.push(index);
-            return false;
-        }
-        // friend
-        if (this.isFriend(index))
-            return true;
-        // enemy
-        result.push(index);
         return true;
+    }
+    insertAvMoves(index, result) {
+        let res = this.checkAvMoves(index);
+        if (res != 'friend')
+            result.push(index);
+        return res;
     }
     generateAvailableMoves(piece, index) {
         let result = [];
@@ -71,7 +66,7 @@ class Chess {
                             || coord.y + yOffset < 0
                             || coord.y + yOffset > 7)
                             continue;
-                        this.checkAvailabeMove(ChessCanvas.getIndex({
+                        this.insertAvMoves(ChessCanvas.getIndex({
                             x: coord.x + xOffset,
                             y: coord.y + yOffset
                         }), result);
@@ -91,38 +86,80 @@ class Chess {
         // KING //
         else if (piece.toLowerCase() === 'k') {
             if (coord.x != 0)
-                this.checkAvailabeMove(index - 1, result);
+                this.insertAvMoves(index - 1, result);
             if (coord.x != 7)
-                this.checkAvailabeMove(index + 1, result);
+                this.insertAvMoves(index + 1, result);
             if (coord.y != 0)
-                this.checkAvailabeMove(index - 8, result);
+                this.insertAvMoves(index - 8, result);
             if (coord.y != 7)
-                this.checkAvailabeMove(index + 8, result);
+                this.insertAvMoves(index + 8, result);
             if (coord.y != 7 && coord.x != 7)
-                this.checkAvailabeMove(index + 9, result);
+                this.insertAvMoves(index + 9, result);
             if (coord.y != 0 && coord.x != 7)
-                this.checkAvailabeMove(index - 7, result);
+                this.insertAvMoves(index - 7, result);
             if (coord.y != 7 && coord.x != 0)
-                this.checkAvailabeMove(index + 7, result);
+                this.insertAvMoves(index + 7, result);
             if (coord.y != 0 && coord.x != 0)
-                this.checkAvailabeMove(index - 9, result);
+                this.insertAvMoves(index - 9, result);
         }
         // PAWNS //
         else if (piece.toLowerCase() === 'p') {
             if (this.currentPlayer === this.firstPlayer) {
                 if (coord.y == 6) {
-                    this.checkAvailabeMove(index - 16, result);
+                    if (this.checkAvMoves(index - 16) === 'empty') {
+                        result.push(index - 16);
+                    }
                 }
-                this.checkAvailabeMove(index - 8, result);
+                if (coord.y != 0) {
+                    if (this.checkAvMoves(index - 8) === 'empty') {
+                        result.push(index - 8);
+                    }
+                    if (coord.x != 0) {
+                        if (this.checkAvMoves(index - 7) === 'enemy') {
+                            result.push(index - 7);
+                        }
+                    }
+                    if (coord.x != 7) {
+                        if (this.checkAvMoves(index - 9) === 'enemy') {
+                            result.push(index - 9);
+                        }
+                    }
+                }
             }
             else {
                 if (coord.y == 1) {
-                    this.checkAvailabeMove(index + 16, result);
+                    if (this.checkAvMoves(index + 16) === 'empty') {
+                        result.push(index + 16);
+                    }
                 }
-                this.checkAvailabeMove(index + 8, result);
+                if (coord.y != 7) {
+                    if (this.checkAvMoves(index + 8) === 'empty') {
+                        result.push(index + 8);
+                    }
+                    if (coord.x != 0) {
+                        if (this.checkAvMoves(index + 7) === 'enemy') {
+                            result.push(index + 7);
+                        }
+                    }
+                    if (coord.x != 7) {
+                        if (this.checkAvMoves(index + 9) === 'enemy') {
+                            result.push(index + 9);
+                        }
+                    }
+                }
             }
         }
         return result;
+    }
+    checkAvMoves(index) {
+        if (!this.board[index]) {
+            return 'empty';
+        }
+        // friend
+        if (this.isFriend(index))
+            return 'friend';
+        // enemy
+        return 'enemy';
     }
     isEnemy(index) {
         if (!this.board[index])
@@ -147,19 +184,19 @@ class Chess {
         let coord = ChessCanvas.getCoords(index);
         // up
         for (let i = index - 8; i >= 0; i -= 8)
-            if (this.checkAvailabeMove(i, result))
+            if (this.insertAvMoves(i, result) != 'empty')
                 break;
         // down
         for (let i = index + 8; i < 64; i += 8)
-            if (this.checkAvailabeMove(i, result))
+            if (this.insertAvMoves(i, result) != 'empty')
                 break;
         // right
         for (let i = this.moduloNZ(index + 1, 8); i < 8; i++)
-            if (this.checkAvailabeMove(coord.y * 8 + i, result))
+            if (this.insertAvMoves(coord.y * 8 + i, result) != 'empty')
                 break;
         // left
         for (let i = this.moduloNZ(index + 1, 8); i > 1; i--)
-            if (this.checkAvailabeMove(coord.y * 8 + i - 2, result))
+            if (this.insertAvMoves(coord.y * 8 + i - 2, result) != 'empty')
                 break;
     }
     diagonalAxisMove(index, result) {
@@ -169,7 +206,7 @@ class Chess {
         coord.y--;
         if (coord.x != 0 && coord.y != 0)
             while (coord.x >= 0 && coord.y >= 0) {
-                if (this.checkAvailabeMove(ChessCanvas.getIndex(coord), result))
+                if (this.insertAvMoves(ChessCanvas.getIndex(coord), result) != 'empty')
                     break;
                 coord.x--;
                 coord.y--;
@@ -180,7 +217,7 @@ class Chess {
         coord.y--;
         if (coord.x != 7 && coord.y != 0)
             while (coord.x <= 7 && coord.y >= 0) {
-                if (this.checkAvailabeMove(ChessCanvas.getIndex(coord), result))
+                if (this.insertAvMoves(ChessCanvas.getIndex(coord), result) != 'empty')
                     break;
                 coord.x++;
                 coord.y--;
@@ -191,7 +228,7 @@ class Chess {
         coord.y++;
         if (coord.x != 0 && coord.y != 7)
             while (coord.x >= 0 && coord.y <= 7) {
-                if (this.checkAvailabeMove(ChessCanvas.getIndex(coord), result))
+                if (this.insertAvMoves(ChessCanvas.getIndex(coord), result) != 'empty')
                     break;
                 coord.x--;
                 coord.y++;
@@ -202,10 +239,16 @@ class Chess {
         coord.y++;
         if (coord.x != 7 && coord.y != 7)
             while (coord.x <= 7 && coord.y <= 7) {
-                if (this.checkAvailabeMove(ChessCanvas.getIndex(coord), result))
+                if (this.insertAvMoves(ChessCanvas.getIndex(coord), result) != 'empty')
                     break;
                 coord.x++;
                 coord.y++;
             }
     }
+}
+function isUpperCase(source) {
+    return source == source.toUpperCase();
+}
+function isLowerCase(source) {
+    return source == source.toLowerCase();
 }

@@ -8,4 +8,6 @@ canvas.addEventListener('click', (e) => {
   };
 });
 
-document.getElementById('sprite')?.addEventListener('load', () => chessCanvas.draw());
+window.addEventListener('load', (ev) => {
+  chessCanvas.draw();
+});

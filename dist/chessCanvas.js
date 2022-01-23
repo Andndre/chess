@@ -13,7 +13,7 @@ class ChessCanvas {
         this.drawBackground();
         this.drawAvMovs();
         let selectedIndex = this.chess.selectedIndex;
-        if (selectedIndex) {
+        if (selectedIndex != undefined) {
             let selectedCoord = ChessCanvas.getCoords(selectedIndex);
             this.ctx.fillStyle = this.chess.currentPlayer == this.chess.firstPlayer ? highlight : enemy;
             this.ctx.fillRect(selectedCoord.x * ChessCanvas.boxScale, selectedCoord.y * ChessCanvas.boxScale, ChessCanvas.boxScale, ChessCanvas.boxScale);
@@ -75,10 +75,11 @@ class ChessCanvas {
         this.ctx.drawImage(this.img, sx, sy, 213, 213, coord.x * ChessCanvas.boxScale, coord.y * ChessCanvas.boxScale, ChessCanvas.boxScale, ChessCanvas.boxScale);
     }
     static getCoords(index) {
-        return {
+        let result = {
             x: index % 8,
             y: index >> 3,
         };
+        return result;
     }
     static getIndex(coord) {
         return coord.x + coord.y * 8;

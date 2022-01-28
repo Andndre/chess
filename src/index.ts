@@ -1,13 +1,13 @@
 let canvas = document.getElementById('canvas') as HTMLCanvasElement;
 let chess = new Chess('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
-let chessCanvas = new ChessCanvas(chess, canvas);
+let board = new Board(chess, canvas);
 
 canvas.addEventListener('click', (e) => {
-  if(chess.clicked(ChessCanvas.getCLickedIndex({x: e.clientX, y: e.clientY}))){
-    chessCanvas.draw();
+  if(chess.clicked(Board.getCLickedIndex(e.clientX, e.clientY))){
+    board.draw();
   };
 });
 
 window.addEventListener('load', (ev) => {
-  chessCanvas.draw();
+  board.draw();
 });

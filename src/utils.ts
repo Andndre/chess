@@ -1,4 +1,4 @@
-function applyFen (board: number[], fen: string) {
+function applyFen (board: number[], fen: string, kingPos: number[]) {
   let index = 0;
   for (let row of fen.split(' ')[0].split ('/')) {
     for (let char of row) {
@@ -15,7 +15,7 @@ function applyFen (board: number[], fen: string) {
         case 'b':
           board [index] = Piece.bishop; break; 
         case 'k':
-          board [index] = Piece.king; break; 
+          board [index] = Piece.king; kingPos.push (index); break; 
         case 'q':
           board [index] = Piece.queen; break; 
         case 'r':

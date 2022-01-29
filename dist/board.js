@@ -11,6 +11,7 @@ class Board {
         this.ctx.font = Board.boxScale * 0.2 + 'px Arial';
         this.img = document.getElementById('sprite');
     }
+    // draw the whole board
     draw() {
         this.drawBackground();
         this.drawAvMovs();
@@ -27,6 +28,7 @@ class Board {
         }
         this.drawPieces();
     }
+    // draw the background
     drawBackground() {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {

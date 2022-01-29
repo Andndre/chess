@@ -192,4 +192,17 @@ class Move {
     if(res != 'friend') result.push (index);
     return res;
   }
+
+  static includesEnemyKing (moves: Move[], board: number[], kingsPos: number[], enemyColor: number) : number | undefined {
+    for (let i = 0; i < moves.length; i++) {
+      if (kingsPos.indexOf (moves [i].to) != -1) {
+        if (Piece.getColor (board [moves [i].to]) == enemyColor) {
+          console.log ('found enemy king at ' + moves [i].to);
+          return moves [i].to;
+        }
+      }
+    }
+    console.log ('no enemy king');
+    return undefined;
+  }
 }

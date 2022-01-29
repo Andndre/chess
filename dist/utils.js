@@ -1,5 +1,5 @@
 "use strict";
-function applyFen(board, fen) {
+function applyFen(board, fen, kingPos) {
     let index = 0;
     for (let row of fen.split(' ')[0].split('/')) {
         for (let char of row) {
@@ -19,6 +19,7 @@ function applyFen(board, fen) {
                     break;
                 case 'k':
                     board[index] = Piece.king;
+                    kingPos.push(index);
                     break;
                 case 'q':
                     board[index] = Piece.queen;

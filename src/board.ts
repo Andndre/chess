@@ -3,8 +3,8 @@ class Board{
   private ctx: CanvasRenderingContext2D;
   private chess: Chess;
   private img: CanvasImageSource;
-  static boxScale = window.innerHeight >> 3;
-  
+  static boxScale = window.innerHeight >> 3;  
+
   constructor(chess: Chess, canvas: HTMLCanvasElement){
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d')!;
@@ -17,6 +17,7 @@ class Board{
     this.img = document.getElementById('sprite') as CanvasImageSource;
   }
 
+  // draw the whole board
   draw(){
     this.drawBackground();
     this.drawAvMovs();
@@ -40,6 +41,7 @@ class Board{
     this.drawPieces ();
   }
 
+  // draw the background
   drawBackground(){
     for(let i = 0; i < 8; i++){
       for(let j = 0; j < 8; j++){

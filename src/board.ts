@@ -59,8 +59,8 @@ class Board{
 
   drawAvMovs(){
     for(let index of this.chess.availableMoves){
-      let [x, y] = getCoords(index);
-      if(!this.chess.board[index]){
+      let [x, y] = getCoords(index.to);
+      if(!this.chess.board[index.to]){
         this.ctx.beginPath();
         this.ctx.arc(
           x * Board.boxScale + (Board.boxScale >> 1), 

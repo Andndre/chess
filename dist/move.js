@@ -4,213 +4,173 @@ class Move {
         this.from = from;
         this.to = to;
     }
-    static includesTo(moves, to) {
-        for (let i = 0; i < moves.length; i++) {
-            if (moves[i].to == to) {
+    static insertAvMove({ move, moves, insertIf = ["enemy", "none"], }) {
+        let board = Board.get();
+        let piece = board.square[move.from];
+        let pieceTo = board.square[move.to];
+        let color = piece.getColor();
+        let colorTo = pieceTo.getColor();
+        if (Piece.invertColor(color) == colorTo) {
+            if (insertIf.indexOf("enemy") != -1) {
+                moves.push(move.to);
                 return true;
             }
+            return false;
+        }
+        if (colorTo == Piece.none) {
+            if (insertIf.indexOf("none") != -1) {
+                moves.push(move.to);
+                return true;
+            }
+            return false;
+        }
+        if (insertIf.indexOf("friend") != -1) {
+            moves.push(move.to);
+            return true;
         }
         return false;
     }
-    static includes(moves, move) {
-        for (let i = 0; i < moves.length; i++) {
-            if (moves[i].from == move.from && moves[i].to == move.to) {
-                return true;
-            }
-        }
-        return false;
-    }
-    static checkAvMoves(to) {
-        if (!chess.board[to]) {
-            return 'none';
-        }
-        // friend
-        if (chess.isFriend(to))
-            return 'friend';
-        // enemy
-        return 'enemy';
-    }
-    static generateAvailableMoves(piece, from) {
+    static generateAvailableMoves(from) {
+        let board = Board.get();
         let result = [];
         let [x, y] = getCoords(from);
+        let piece = board.square[from];
         // RNBQKBNR
         // ROOKS //
-        if (Piece.getType(piece) === Piece.rook) {
-            Move.alignAxisMove(from, result);
+        if (piece.getType() === Piece.rook) {
+            result.push(...Move.alignAxisMove(from));
         }
         // KNIGHTS //
-        else if (Piece.getType(piece) == Piece.knight) {
-            let range = [[-2, 2], [-1, 1]];
+        else if (piece.getType() == Piece.knight) {
+            let range = [
+                [-2, 2],
+                [-1, 1],
+            ];
             for (let i = 0; i < 2; i++) {
                 for (let xOffset of range[i]) {
                     for (let yOffset of range[1 - i]) {
-                        if (x + xOffset < 0
-                            || x + xOffset > 7
-                            || y + yOffset < 0
-                            || y + yOffset > 7)
+                        if (x + xOffset < 0 ||
+                            x + xOffset > 7 ||
+                            y + yOffset < 0 ||
+                            y + yOffset > 7)
                             continue;
                         let index = getIndex(x + xOffset, y + yOffset);
-                        let status = this.insertAvMove(new Move(index, index), result);
-                        if (status == 'enemy' && Piece.getType(chess.board[index]) == Piece.king) {
-                            chess.check = index;
-                        }
+                        this.insertAvMove({ move: new Move(from, index), moves: result });
                     }
                 }
             }
         }
         // BISHOPS //
-        else if (Piece.getType(piece) == Piece.bishop) {
-            Move.diagonalAxisMove(from, result);
+        else if (piece.getType() == Piece.bishop) {
+            result.push(...Move.diagonalAxisMove(from));
         }
         // QUEEN //
-        else if (Piece.getType(piece) == Piece.queen) {
-            Move.alignAxisMove(from, result);
-            Move.diagonalAxisMove(from, result);
+        else if (piece.getType() == Piece.queen) {
+            result.push(...Move.alignAxisMove(from));
+            result.push(...Move.diagonalAxisMove(from));
         }
         // KING //
-        else if (Piece.getType(piece) == Piece.king) {
-            if (x != 0)
-                this.insertAvMove(new Move(from, from - 1), result);
-            if (x != 7)
-                this.insertAvMove(new Move(from, from + 1), result);
-            if (y != 0)
-                this.insertAvMove(new Move(from, from - 8), result);
-            if (y != 7)
-                this.insertAvMove(new Move(from, from + 8), result);
-            if (y != 7 && x != 7)
-                this.insertAvMove(new Move(from, from + 9), result);
-            if (y != 0 && x != 7)
-                this.insertAvMove(new Move(from, from - 7), result);
-            if (y != 7 && x != 0)
-                this.insertAvMove(new Move(from, from + 7), result);
-            if (y != 0 && x != 0)
-                this.insertAvMove(new Move(from, from - 9), result);
+        else if (piece.getType() == Piece.king) {
+            let range = [
+                [-1, 1],
+                [-1, 0],
+                [-1, -1],
+                [0, -1],
+                [1, -1],
+                [1, 0],
+                [1, 1],
+                [0, 1],
+            ];
+            let coord = getCoords(from);
+            for (let i = 0; i < 8; i++) {
+                let xOffset = range[i][0];
+                let yOffset = range[i][1];
+                let xFinal = coord[0] + xOffset;
+                let yFinal = coord[1] + yOffset;
+                if (xFinal < 0 || xFinal > 7 || yFinal < 0 || yFinal > 7)
+                    continue;
+                let index = getIndex(xFinal, yFinal);
+                this.insertAvMove({ move: new Move(from, index), moves: result });
+            }
         }
         // PAWNS //
-        else if (Piece.getType(piece) == Piece.pawn) {
-            if (chess.currentPlayer == chess.firstPlayer) {
-                if (y == 6) {
-                    if (Move.checkAvMoves(from - 16) == 'none' && Move.checkAvMoves(from - 8) == 'none') {
-                        result.push(new Move(from, from - 16));
-                    }
-                }
-                if (y != 0) {
-                    if (Move.checkAvMoves(from - 8) == 'none') {
-                        result.push(new Move(from, from - 8));
-                    }
-                    if (x != 0) {
-                        if (Move.checkAvMoves(from - 7) == 'enemy') {
-                            if (Piece.getType(chess.board[from - 7]) == Piece.king)
-                                chess.check = from - 7;
-                            result.push(new Move(from, from - 7));
-                        }
-                    }
-                    if (x != 7) {
-                        if (Move.checkAvMoves(from - 9) == 'enemy') {
-                            if (Piece.getType(chess.board[from - 9]) == Piece.king)
-                                chess.check = from - 9;
-                            result.push(new Move(from, from - 9));
-                        }
-                    }
+        else if (piece.getType() == Piece.pawn) {
+            let board = Board.get();
+            let offset = piece.getColor() == (board.playAsWhite ? Piece.white : Piece.black)
+                ? -8
+                : 8;
+            let index = from + offset;
+            [, y] = getCoords(from);
+            if (this.insertAvMove({
+                move: new Move(from, index),
+                moves: result,
+                insertIf: ["none"],
+            })) {
+                if (y == (offset == 8 ? 1 : 6)) {
+                    this.insertAvMove({
+                        move: new Move(from, index + offset),
+                        moves: result,
+                        insertIf: ["none"],
+                    });
                 }
             }
-            else {
-                if (y == 1) {
-                    if (Move.checkAvMoves(from + 16) == 'none' && Move.checkAvMoves(from + 8) == 'none') {
-                        result.push(new Move(from, from + 16));
-                    }
-                }
-                if (y != 7) {
-                    if (Move.checkAvMoves(from + 8) == 'none') {
-                        result.push(new Move(from, from + 8));
-                    }
-                    if (x != 0) {
-                        if (Move.checkAvMoves(from + 7) == 'enemy') {
-                            if (Piece.getType(chess.board[from + 7]) == Piece.king)
-                                chess.check = from + 7;
-                            result.push(new Move(from, from + 7));
-                        }
-                    }
-                    if (x != 7) {
-                        if (Move.checkAvMoves(from + 9) == 'enemy') {
-                            if (Piece.getType(chess.board[from + 9]) == Piece.king)
-                                chess.check = from + 9;
-                            result.push(new Move(from, from + 9));
-                        }
-                    }
-                }
+            if (index % 8 != 0) {
+                this.insertAvMove({
+                    move: new Move(from, index - 1),
+                    moves: result,
+                    insertIf: ["enemy"],
+                });
+            }
+            if ((index - 7) % 8 != 0) {
+                this.insertAvMove({
+                    move: new Move(from, index + 1),
+                    moves: result,
+                    insertIf: ["enemy"],
+                });
             }
         }
         return result;
     }
-    static alignAxisMove(index, result) {
-        let [, y] = getCoords(index);
-        // up
-        for (let i = index - 8; i >= 0; i -= 8) {
-            let status = Move.insertAvMove(new Move(index, i), result);
-            if (status != 'none') {
-                break;
-            }
-        }
-        // down
-        for (let i = index + 8; i < 64; i += 8) {
-            let status = this.insertAvMove(new Move(index, i), result);
-            if (status != 'none') {
-                break;
-            }
-        }
-        // right
-        for (let i = moduloNZ(index + 1, 8); i < 8; i++) {
-            let idx = y * 8 + i;
-            let status = this.insertAvMove(new Move(index, idx), result);
-            if (status != 'none') {
-                break;
-            }
-        }
-        // left
-        for (let i = moduloNZ(index + 1, 8); i > 1; i--) {
-            let idx = y * 8 + i - 2;
-            let status = this.insertAvMove(new Move(index, idx), result);
-            if (status != 'none') {
-                if (status == 'enemy' && Piece.getType(chess.board[idx]) == Piece.king) {
+    static alignAxisMove(from) {
+        let board = Board.get();
+        let piece = board.square[from];
+        let colorToMove = piece.getColor();
+        let moves = [];
+        for (let i = 0; i < 4; i++) {
+            let current = from;
+            let dirrection = board.directionOffsets[i];
+            for (let j = 0; j < board.numToEdge[from][i]; j++) {
+                current += dirrection;
+                let color = board.square[current].getColor();
+                if (color == Piece.none || color == Piece.invertColor(colorToMove)) {
+                    moves.push(current);
+                }
+                if (color == colorToMove || color == Piece.invertColor(colorToMove)) {
                     break;
                 }
             }
         }
+        return moves;
     }
-    withTo(to) {
-        return new Move(this.from, to);
-    }
-    static diagonalAxisMove(from, result) {
-        for (let offset of diagonalAxisMoveOffsets) {
-            let offsetCoord = getOffsetCoord(offset);
-            let curr = getCoords(from);
-            addCoord(curr, offsetCoord);
-            while (curr[0] <= 7 && curr[0] >= 0 && curr[1] >= 0 && curr[1] <= 7) {
-                let to = getIndex(curr[0], curr[1]);
-                let status = this.insertAvMove(new Move(from, to), result);
-                if (status != 'none')
+    static diagonalAxisMove(from) {
+        let board = Board.get();
+        let piece = board.square[from];
+        let colorToMove = piece.getColor();
+        let moves = [];
+        for (let i = 4; i < 9; i++) {
+            let current = from;
+            let dirrection = board.directionOffsets[i];
+            for (let j = 0; j < board.numToEdge[from][i]; j++) {
+                current += dirrection;
+                let color = board.square[current].getColor();
+                if (color == Piece.none || color == Piece.invertColor(colorToMove)) {
+                    moves.push(current);
+                }
+                if (color == colorToMove || color == Piece.invertColor(colorToMove)) {
                     break;
-                addCoord(curr, offsetCoord);
-            }
-        }
-    }
-    static insertAvMove(index, result) {
-        let res = this.checkAvMoves(index.to);
-        if (res != 'friend')
-            result.push(index);
-        return res;
-    }
-    static includesEnemyKing(moves, board, kingsPos, enemyColor) {
-        for (let i = 0; i < moves.length; i++) {
-            if (kingsPos.indexOf(moves[i].to) != -1) {
-                if (Piece.getColor(board[moves[i].to]) == enemyColor) {
-                    console.log('found enemy king at ' + moves[i].to);
-                    return moves[i].to;
                 }
             }
         }
-        console.log('no enemy king');
-        return undefined;
+        return moves;
     }
 }

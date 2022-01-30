@@ -3,9 +3,9 @@
 The features I have implemented:
 - [X] Basic movement rules
 - [ ] Doubled pawns
-- [ ] Promote
+- [X] Promote (queen only)
 - [ ] Castle
-- [X] Check
+- [ ] Check
 - [ ] Checkmate
 - [ ] Timer
 - [ ] Winning screen

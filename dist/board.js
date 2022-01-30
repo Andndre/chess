@@ -1,94 +1,167 @@
 "use strict";
 class Board {
-    constructor(chess, canvas) {
-        this.canvas = canvas;
-        this.ctx = this.canvas.getContext('2d');
-        let potrait = window.innerHeight > window.innerWidth;
-        Board.boxScale = (potrait ? window.innerWidth : window.innerHeight) >> 3;
-        this.canvas.height = window.innerHeight;
-        this.canvas.width = window.innerWidth;
-        this.chess = chess;
-        this.ctx.font = Board.boxScale * 0.2 + 'px Arial';
-        this.img = document.getElementById('sprite');
-    }
-    // draw the whole board
-    draw() {
-        this.drawBackground();
-        this.drawAvMovs();
-        let selectedIndex = this.chess.selectedIndex;
-        if (selectedIndex != undefined) {
-            let [x, y] = getCoords(selectedIndex);
-            this.ctx.fillStyle = this.chess.currentPlayer == this.chess.firstPlayer ? friendColor : enemyColor;
-            this.ctx.fillRect(x * Board.boxScale, y * Board.boxScale, Board.boxScale, Board.boxScale);
-        }
-        if (this.chess.check != undefined) {
-            let [x, y] = getCoords(this.chess.check);
-            this.ctx.fillStyle = enemyColor;
-            this.ctx.fillRect(x * Board.boxScale, y * Board.boxScale, Board.boxScale, Board.boxScale);
-        }
-        this.drawPieces();
-    }
-    // draw the background
-    drawBackground() {
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                // draw boxes
-                this.ctx.fillStyle = (i + j) % 2 === 0
-                    ? lightTileColor
-                    : darkTileColor;
-                this.ctx.fillRect(j * Board.boxScale, i * Board.boxScale, Board.boxScale, Board.boxScale);
+    constructor() {
+        this.colorToMove = Piece.white;
+        this.availableMoveIndexes = [];
+        this.playAsWhite = true;
+        this.selectedIndex = -1;
+        this.numToEdge = [];
+        this.directionOffsets = [8, -8, -1, 1, 7, -7, 9, -9];
+        this.square = [];
+        this.rooks = [];
+        this.kings = [];
+        this.pawns = [];
+        this.bishops = [];
+        this.queens = [];
+        this.knights = [];
+        // precompute the distnce from each square to the edge of the board for each direction
+        for (let file = 0; file < 8; file++) {
+            for (let rank = 0; rank < 8; rank++) {
+                let numNorth = 7 - rank;
+                let numSouth = rank;
+                let numWest = file;
+                let numEast = 7 - file;
+                let squareIndex = getIndex(file, rank);
+                // define the distance to the edge of the board for each direction for each square
+                this.numToEdge[squareIndex] = [
+                    numNorth,
+                    numSouth,
+                    numWest,
+                    numEast,
+                    Math.min(numNorth, numWest),
+                    Math.min(numSouth, numEast),
+                    Math.min(numNorth, numEast),
+                    Math.min(numSouth, numWest),
+                ];
             }
         }
     }
-    drawAvMovs() {
-        for (let index of this.chess.availableMoves) {
-            let [x, y] = getCoords(index.to);
-            if (!this.chess.board[index.to]) {
-                this.ctx.beginPath();
-                this.ctx.arc(x * Board.boxScale + (Board.boxScale >> 1), y * Board.boxScale + (Board.boxScale >> 1), Board.boxScale >> 3, 0, Math.PI * 2);
-                this.ctx.fillStyle = avMovColor;
-                this.ctx.fill();
-                continue;
+    select(index) {
+        if (this.selectedIndex != -1) {
+            if (this.availableMoveIndexes.indexOf(index) != -1) {
+                this.move(new Move(this.selectedIndex, index));
+                this.availableMoveIndexes = [];
+                this.selectedIndex = -1;
             }
-            this.ctx.fillStyle = this.chess.currentPlayer == this.chess.firstPlayer ? enemyColor : friendColor;
-            this.ctx.fillRect(x * Board.boxScale, y * Board.boxScale, Board.boxScale, Board.boxScale);
+            if (this.square[index].getColor() == this.colorToMove) {
+                this.selectedIndex = index;
+                this.availableMoveIndexes = Move.generateAvailableMoves(this.selectedIndex);
+            }
+            return;
         }
+        let piece = this.square[index];
+        if (piece.getColor() != this.colorToMove)
+            return;
+        let type = piece.getType();
+        if (type == Piece.none)
+            return;
+        this.selectedIndex = index;
+        this.availableMoveIndexes = Move.generateAvailableMoves(this.selectedIndex);
     }
-    drawPieces() {
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                let index = getIndex(j, i);
-                // highlight selected
-                if (this.chess.board[index] == Piece.none)
+    move(move) {
+        if (this.square[move.to].getType() != Piece.none) {
+            // capture
+            let piece = this.square[move.to];
+            // remove the captured piece
+            switch (piece.getType()) {
+                case Piece.pawn:
+                    this.pawns.splice(this.pawns.indexOf(piece), 1);
+                    break;
+                case Piece.bishop:
+                    this.bishops.splice(this.bishops.indexOf(piece), 1);
+                    break;
+                case Piece.king:
+                    this.kings.splice(this.kings.indexOf(piece), 1);
+                    break;
+                case Piece.queen:
+                    this.queens.splice(this.queens.indexOf(piece), 1);
+                    break;
+                case Piece.knight:
+                    this.knights.splice(this.knights.indexOf(piece), 1);
+                    break;
+                case Piece.rook:
+                    this.rooks.splice(this.rooks.indexOf(piece), 1);
+                    break;
+            }
+        }
+        // move the piece
+        this.square[move.to] = this.square[move.from];
+        this.square[move.from] = new Piece(move.from, Piece.none);
+        this.square[move.to].index = move.to;
+        if (this.square[move.to].getType() == Piece.pawn) {
+            let [, y] = getCoords(move.to);
+            // if the pawn is at the end of the board, promote it
+            if (y == 0 || y == 7) {
+                // promote pawn to queen
+                // TODO: make this a dropdown menu
+                let pawn = this.square[move.to];
+                this.pawns.splice(this.pawns.indexOf(pawn), 1);
+                this.queens.push(pawn);
+                pawn.data = this.colorToMove | Piece.queen;
+            }
+        }
+        // switch player
+        this.colorToMove =
+            this.colorToMove == Piece.white ? Piece.black : Piece.white;
+        this.lastMove = new Move(move.from, move.to);
+    }
+    // get the board instance or create a new one if it doesn't exist
+    static get() {
+        if (this.instance == undefined) {
+            this.instance = new Board();
+        }
+        return this.instance;
+    }
+    // load the board with the given fen position
+    // fen : https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+    loadFenPositions(fen) {
+        let index = 0;
+        let fenComponents = fen.split(" ");
+        let fenPositions = fenComponents[0].split("/");
+        this.playAsWhite = fenComponents[1] == "w";
+        this.colorToMove = this.playAsWhite ? Piece.white : Piece.black;
+        // loop through each row
+        for (let row of fenPositions) {
+            // loop through each character in the row
+            for (let char of row) {
+                // if the character is a number, add that many blank squares to the board
+                if (["1", "2", "3", "4", "5", "6", "7", "8", "9"].indexOf(char) != -1) {
+                    let num = Number.parseInt(char);
+                    // fill with none
+                    fillTypeRange(this.square, index, index + num, Piece.none);
+                    // skip
+                    index += num;
                     continue;
-                this.drawPiece(this.chess.board[index], index);
+                }
+                // if the character is a letter, add that piece to the board
+                let piece = new Piece(index, Piece.getTypeFromChar(char));
+                // add the piece to the board
+                this.square[index] = piece;
+                let white = isUpperCase(char);
+                // set the piece's colour
+                this.square[index++].data |= white ? Piece.white : Piece.black;
+                // add the piece to the correct piece array
+                switch (char.toLowerCase()) {
+                    case "p":
+                        this.pawns.push(piece);
+                        break;
+                    case "b":
+                        this.bishops.push(piece);
+                        break;
+                    case "k":
+                        this.kings.push(piece);
+                        break;
+                    case "q":
+                        this.queens.push(piece);
+                        break;
+                    case "r":
+                        this.rooks.push(piece);
+                        break;
+                    case "n":
+                        this.knights.push(piece);
+                        break;
+                }
             }
         }
-    }
-    drawPiece(piece, index) {
-        let black = Piece.isColor(piece, Piece.black);
-        // this y-coordinate will be 0 if it is white 
-        // and half the height of the sprites if it is black
-        let sy = black ? 213 : 0;
-        let sx = [
-            Piece.king,
-            Piece.queen,
-            Piece.bishop,
-            Piece.knight,
-            Piece.rook,
-            Piece.pawn
-        ].indexOf(Piece.getType(piece)) * 213;
-        let [x, y] = getCoords(index);
-        this.ctx.drawImage(this.img, sx, sy, 213, 213, x * Board.boxScale, y * Board.boxScale, Board.boxScale, Board.boxScale);
-    }
-    static getClickedCoord(x, y) {
-        x = Math.floor(x / Board.boxScale);
-        y = Math.floor(y / Board.boxScale);
-        return [x, y];
-    }
-    static getCLickedIndex(x, y) {
-        [x, y] = Board.getClickedCoord(x, y);
-        return x + y * 8;
     }
 }
-Board.boxScale = window.innerHeight >> 3;

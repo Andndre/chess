@@ -2,18 +2,14 @@
 class Board {
     constructor() {
         this.colorToMove = Piece.white;
-        this.availableMoveIndexes = [];
+        this.checkMate = false;
+        this.availableMoves = [];
         this.playAsWhite = true;
         this.selectedIndex = -1;
         this.numToEdge = [];
         this.directionOffsets = [8, -8, -1, 1, 7, -7, 9, -9];
         this.square = [];
-        this.rooks = [];
         this.kings = [];
-        this.pawns = [];
-        this.bishops = [];
-        this.queens = [];
-        this.knights = [];
         // precompute the distnce from each square to the edge of the board for each direction
         for (let file = 0; file < 8; file++) {
             for (let rank = 0; rank < 8; rank++) {
@@ -38,14 +34,13 @@ class Board {
     }
     select(index) {
         if (this.selectedIndex != -1) {
-            if (this.availableMoveIndexes.indexOf(index) != -1) {
+            if (this.availableMoves[this.selectedIndex].indexOf(index) != -1) {
                 this.move(new Move(this.selectedIndex, index));
-                this.availableMoveIndexes = [];
+                this.checkMate = Move.generateMoves();
                 this.selectedIndex = -1;
             }
             if (this.square[index].getColor() == this.colorToMove) {
                 this.selectedIndex = index;
-                this.availableMoveIndexes = Move.generateAvailableMoves(this.selectedIndex);
             }
             return;
         }
@@ -56,54 +51,85 @@ class Board {
         if (type == Piece.none)
             return;
         this.selectedIndex = index;
-        this.availableMoveIndexes = Move.generateAvailableMoves(this.selectedIndex);
     }
+    // returns true if the move put the enemy king in check
     move(move) {
-        if (this.square[move.to].getType() != Piece.none) {
-            // capture
-            let piece = this.square[move.to];
-            // remove the captured piece
-            switch (piece.getType()) {
-                case Piece.pawn:
-                    this.pawns.splice(this.pawns.indexOf(piece), 1);
-                    break;
-                case Piece.bishop:
-                    this.bishops.splice(this.bishops.indexOf(piece), 1);
-                    break;
-                case Piece.king:
-                    this.kings.splice(this.kings.indexOf(piece), 1);
-                    break;
-                case Piece.queen:
-                    this.queens.splice(this.queens.indexOf(piece), 1);
-                    break;
-                case Piece.knight:
-                    this.knights.splice(this.knights.indexOf(piece), 1);
-                    break;
-                case Piece.rook:
-                    this.rooks.splice(this.rooks.indexOf(piece), 1);
-                    break;
-            }
-        }
+        this.lastMoveToData = this.square[move.to].data;
+        this.lastMoveFromData = this.square[move.from].data;
         // move the piece
-        this.square[move.to] = this.square[move.from];
-        this.square[move.from] = new Piece(move.from, Piece.none);
-        this.square[move.to].index = move.to;
-        if (this.square[move.to].getType() == Piece.pawn) {
+        this.square[move.to].data = this.square[move.from].data;
+        this.square[move.from].data = Piece.none;
+        if (this.square[move.to].getType() == Piece.king) {
+            this.kings[this.colorToMove == Piece.white ? 0 : 1] =
+                this.square[move.to];
+        }
+        if (Piece.getType(this.lastMoveFromData) == Piece.pawn) {
             let [, y] = getCoords(move.to);
             // if the pawn is at the end of the board, promote it
             if (y == 0 || y == 7) {
                 // promote pawn to queen
                 // TODO: make this a dropdown menu
                 let pawn = this.square[move.to];
-                this.pawns.splice(this.pawns.indexOf(pawn), 1);
-                this.queens.push(pawn);
                 pawn.data = this.colorToMove | Piece.queen;
             }
         }
         // switch player
         this.colorToMove =
             this.colorToMove == Piece.white ? Piece.black : Piece.white;
+        this.lastLastMove = this.lastMove;
         this.lastMove = new Move(move.from, move.to);
+        return this.isCheck();
+    }
+    undoMove() {
+        if (this.lastMove == undefined)
+            return;
+        let move = this.lastMove;
+        this.square[move.from].data = this.lastMoveFromData;
+        this.square[move.to].data = this.lastMoveToData;
+        this.colorToMove = Piece.invertColor(this.colorToMove);
+        if (this.square[move.from].getType() == Piece.king) {
+            this.kings[this.colorToMove == Piece.white ? 0 : 1] =
+                this.square[move.from];
+        }
+        this.lastMove = this.lastLastMove;
+        this.lastLastMove = undefined;
+    }
+    isCheck() {
+        // check if the enemy king is in check by any of the friendly pieces
+        // loop through all the pieces of the friendly color and check if they can move to the enemy king
+        this.checkIndex = undefined;
+        let enemyKingIndex = this.kings[this.colorToMove == Piece.white ? 1 : 0].index;
+        let friendlyPieces = this.getFriendlyPieces(this.colorToMove);
+        for (let i = 0; i < friendlyPieces.length; i++) {
+            let piece = friendlyPieces[i];
+            let moves = Move.generateAvailableMoves(piece.index);
+            for (let j = 0; j < moves.length; j++) {
+                if (moves[j] == enemyKingIndex) {
+                    this.checkIndex = enemyKingIndex;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    getAllPieces() {
+        let pieces = [];
+        for (let i = 0; i < 64; i++) {
+            let piece = this.square[i];
+            if (piece.getType() != Piece.none) {
+                pieces.push(piece);
+            }
+        }
+        return pieces;
+    }
+    getFriendlyPieces(color) {
+        let pieces = [];
+        for (let piece of this.square) {
+            if (piece.getColor() == color) {
+                pieces.push(piece);
+            }
+        }
+        return pieces;
     }
     // get the board instance or create a new one if it doesn't exist
     static get() {
@@ -140,28 +166,11 @@ class Board {
                 let white = isUpperCase(char);
                 // set the piece's colour
                 this.square[index++].data |= white ? Piece.white : Piece.black;
-                // add the piece to the correct piece array
-                switch (char.toLowerCase()) {
-                    case "p":
-                        this.pawns.push(piece);
-                        break;
-                    case "b":
-                        this.bishops.push(piece);
-                        break;
-                    case "k":
-                        this.kings.push(piece);
-                        break;
-                    case "q":
-                        this.queens.push(piece);
-                        break;
-                    case "r":
-                        this.rooks.push(piece);
-                        break;
-                    case "n":
-                        this.knights.push(piece);
-                        break;
+                if (piece.getType() == Piece.king) {
+                    this.kings[white ? 0 : 1] = piece;
                 }
             }
         }
+        Move.generateMoves();
     }
 }

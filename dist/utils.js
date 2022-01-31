@@ -10,3 +10,8 @@ function isUpperCase(source) {
 function isLowerCase(source) {
     return source == source.toLowerCase();
 }
+function sleep(millisecondsDuration) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, millisecondsDuration);
+    });
+}

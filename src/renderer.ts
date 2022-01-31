@@ -36,6 +36,9 @@ class Renderer {
 				this.drawBox(color, index);
 			}
 		}
+		if (board.checkIndex != undefined) {
+			this.drawBox(checkColor, board.checkIndex);
+		}
 		// draw last move
 		if (board.lastMove != undefined) {
 			this.drawMove(board.lastMove!);
@@ -55,22 +58,18 @@ class Renderer {
 	}
 
 	public drawAvailableMoves(): void {
-		for (let index of Board.get().availableMoveIndexes) {
+		let board = Board.get();
+		if (board.selectedIndex == -1) return;
+		let availableMoves = board.availableMoves[board.selectedIndex!];
+		for (let index of availableMoves) {
 			this.drawBox(availableMoveColor, index);
 		}
 	}
 
 	public drawPieces(): void {
 		let board = Board.get();
-		let pieces = [
-			...board.bishops,
-			...board.knights,
-			...board.rooks,
-			...board.queens,
-			...board.kings,
-			...board.pawns,
-		];
-		for (let piece of pieces) {
+		let allPieces = board.getAllPieces();
+		for (let piece of allPieces) {
 			this.drawPiece(piece);
 		}
 	}

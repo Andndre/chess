@@ -43,6 +43,49 @@ class Move {
 		return false;
 	}
 
+	// check if move is legal
+	public isLegal(): boolean {
+		let board = Board.get();
+		let result = board.move(this);
+		board.undoMove();
+		return !result;
+	}
+
+	// get all possible moves
+	static generateAvailableLegalMoves(from: number): number[] {
+		let result: number[] = [];
+
+		// generate move using `generateAvailableMoves` function and insert it into `result` array and then filter it so all moves that are not legal are removed
+		let moves = Move.generateAvailableMoves(from);
+		for (let i = 0; i < moves.length; i++) {
+			let move = new Move(from, moves[i]);
+			if (move.isLegal()) {
+				result.push(moves[i]);
+			}
+		}
+		return result;
+	}
+
+	static generateMoves() {
+		let board = Board.get();
+		let checkMate = true;
+		for (let i = 0; i < 64; i++) {
+			let piece = board.square[i];
+			if (
+				piece.getColor() == Piece.none ||
+				piece.getColor() != board.colorToMove
+			) {
+				continue;
+			}
+			let moves = Move.generateAvailableLegalMoves(i);
+			if (checkMate) {
+				checkMate = moves.length == 0;
+			}
+			board.availableMoves[i] = moves;
+		}
+		return checkMate;
+	}
+
 	static generateAvailableMoves(from: number): number[] {
 		let board = Board.get();
 		let result: number[] = [];

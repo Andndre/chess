@@ -16,3 +16,9 @@ function isUpperCase(source: string) {
 function isLowerCase(source: string) {
 	return source == source.toLowerCase();
 }
+
+function sleep(millisecondsDuration: number) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, millisecondsDuration);
+	});
+}

@@ -15,10 +15,15 @@ window.onload = () => {
 	);
 	let renderer = Renderer.get();
 	renderer.drawBoard();
-	canvas.addEventListener("click", (event) => {
+	canvas.addEventListener("click", async (event) => {
 		let index = getClickedIndex(event);
 		let board = Board.get();
 		board.select(index);
 		renderer.drawBoard();
+		// without this the alert will pause the game before the canvas gets updated
+		await sleep(0);
+		if (board.checkMate) {
+			alert("Checkmate!");
+		}
 	});
 };

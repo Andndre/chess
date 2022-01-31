@@ -5,8 +5,8 @@ The features I have implemented:
 - [ ] Doubled pawns
 - [X] Promote (queen only)
 - [ ] Castle
-- [ ] Check
-- [ ] Checkmate
+- [X] Check
+- [X] Checkmate
 - [ ] Timer
 - [ ] Winning screen
 - [X] Multiplayer mode

@@ -13,7 +13,7 @@ function getMousePos(ev) {
 }
 function getClickedIndex(event) {
     let [x, y] = getMousePos(event);
-    let boxScale = canvas.width / 8;
+    let boxScale = size / 8;
     let index = getIndex(Math.floor(x / boxScale), Math.floor(y / boxScale));
     return index;
 }

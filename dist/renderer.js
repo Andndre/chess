@@ -1,22 +1,20 @@
 "use strict";
 class Renderer {
-    constructor(size) {
-        this.ctx = ctx;
-        this.size = size;
+    constructor() {
         this.sprite = document.getElementById("sprite");
     }
     static get() {
         if (this.instance == undefined) {
-            this.instance = new Renderer(canvas.width);
+            this.instance = new Renderer();
         }
         return this.instance;
     }
     // draw a box with the given color and index
     drawBox(color, index) {
         let [x, y] = getCoords(index);
-        this.ctx.fillStyle = color;
-        let boxScale = this.size / 8;
-        this.ctx.fillRect(x * boxScale, y * boxScale, boxScale, boxScale);
+        ctx.fillStyle = color;
+        let boxScale = scaledSize / 8;
+        ctx.fillRect(x * boxScale, y * boxScale, boxScale, boxScale);
     }
     drawBoard() {
         let board = Board.get();
@@ -69,7 +67,7 @@ class Renderer {
         let black = piece.isColor(Piece.black);
         let singleSpriteSize = this.sprite.width / 6;
         let sy = black ? singleSpriteSize : 0;
-        let boxScale = this.size / 8;
+        let boxScale = scaledSize / 8;
         let sx = [
             Piece.king,
             Piece.queen,
@@ -80,6 +78,6 @@ class Renderer {
         ].indexOf(piece.getType()) * singleSpriteSize;
         let [x, y] = getCoords(piece.index);
         // draw the piece
-        this.ctx.drawImage(this.sprite, sx, sy, singleSpriteSize, singleSpriteSize, x * boxScale, y * boxScale, boxScale, boxScale);
+        ctx.drawImage(this.sprite, sx, sy, singleSpriteSize, singleSpriteSize, x * boxScale, y * boxScale, boxScale, boxScale);
     }
 }

@@ -10,26 +10,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 let canvas;
 let ctx;
+let size;
+let scaledSize;
+let scale = window.devicePixelRatio;
 window.onload = () => {
     canvas = document.getElementById("canvas");
-    let size = window.innerWidth > window.innerHeight
-        ? window.innerHeight
-        : window.innerWidth;
-    canvas.width = size;
-    canvas.height = size;
     ctx = canvas.getContext("2d");
     Board.get().loadFenPositions("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     let renderer = Renderer.get();
-    renderer.drawBoard();
+    onResize();
+    window.addEventListener("resize", onResize);
     canvas.addEventListener("click", (event) => __awaiter(void 0, void 0, void 0, function* () {
         let index = getClickedIndex(event);
         let board = Board.get();
         board.select(index);
         renderer.drawBoard();
         // without this the alert will pause the game before the canvas gets updated
-        yield sleep(0);
+        yield sleep(10);
         if (board.checkMate) {
             alert("Checkmate!");
         }
     }));
+    ["", "webkit", "moz", "ms"].forEach((prefix) => document.addEventListener(prefix + "fullscreenchange", onResize, false));
 };
+function onResize() {
+    size =
+        window.innerWidth > window.innerHeight
+            ? window.innerHeight
+            : window.innerWidth;
+    scaledSize = Math.floor(size * scale);
+    canvas.width = scaledSize;
+    canvas.height = scaledSize;
+    Renderer.get().drawBoard();
+}

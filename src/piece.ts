@@ -64,4 +64,15 @@ class Piece {
 				return Piece.knight;
 		}
 	}
+
+	static includesData(moves: number[], ...datas: number[]): boolean {
+		for (let move of moves) {
+			for (let data of datas) {
+				if (Board.get().square[move].data == data) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

@@ -22,3 +22,18 @@ function sleep(millisecondsDuration: number) {
 		setTimeout(resolve, millisecondsDuration);
 	});
 }
+
+function getRookIndex(pos: number) {
+	switch (pos) {
+		case 0:
+			return 0;
+		case 7:
+			return 1;
+		case 56:
+			return 2;
+		case 63:
+			return 3;
+		default:
+			return -1;
+	}
+}

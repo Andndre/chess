@@ -3,6 +3,8 @@ class Board {
     constructor() {
         this.colorToMove = Piece.white;
         this.checkMate = false;
+        this.isKingHasMoved = [true, true];
+        this.isRookHasMoved = [true, true, true, true];
         this.availableMoves = [];
         this.playAsWhite = true;
         this.selectedIndex = -1;
@@ -53,15 +55,39 @@ class Board {
         this.selectedIndex = index;
     }
     // returns true if the move put the enemy king in check
-    move(move) {
+    move(move, test = false) {
         this.lastMoveToData = this.square[move.to].data;
         this.lastMoveFromData = this.square[move.from].data;
+        if (!test) {
+            console.log(move);
+            // make isRookHasMoved[i] true if the move.from or the move.to is a rook
+            let idx = getRookIndex(move.from);
+            if (idx != -1) {
+                this.isRookHasMoved[idx] = true;
+            }
+            idx = getRookIndex(move.to);
+            if (idx != -1) {
+                this.isRookHasMoved[idx] = true;
+            }
+        }
         // move the piece
         this.square[move.to].data = this.square[move.from].data;
         this.square[move.from].data = Piece.none;
         if (this.square[move.to].getType() == Piece.king) {
-            this.kings[this.colorToMove == Piece.white ? 0 : 1] =
-                this.square[move.to];
+            let index = this.colorToMove == Piece.white ? 0 : 1;
+            this.kings[index] = this.square[move.to];
+            if (!test) {
+                this.isKingHasMoved[index] = true;
+                let offset = move.to - move.from;
+                if (Math.abs(offset) == 2) {
+                    // castling
+                    let rookIndex = move.from + (offset < 0 ? -4 : 3);
+                    let rookFinal = move.from + (offset >> 1);
+                    this.isRookHasMoved[getRookIndex(rookIndex)] = true;
+                    this.square[rookFinal].data = this.square[rookIndex].data;
+                    this.square[rookIndex].data = 0;
+                }
+            }
         }
         if (Piece.getType(this.lastMoveFromData) == Piece.pawn) {
             let [, y] = getCoords(move.to);
@@ -74,8 +100,8 @@ class Board {
             }
         }
         // switch player
-        this.colorToMove =
-            this.colorToMove == Piece.white ? Piece.black : Piece.white;
+        let isWhite = this.colorToMove == Piece.white;
+        this.colorToMove = isWhite ? Piece.black : Piece.white;
         this.lastLastMove = this.lastMove;
         this.lastMove = new Move(move.from, move.to);
         return this.isCheck();
@@ -95,20 +121,11 @@ class Board {
         this.lastLastMove = undefined;
     }
     isCheck() {
-        // check if the enemy king is in check by any of the friendly pieces
-        // loop through all the pieces of the friendly color and check if they can move to the enemy king
         this.checkIndex = undefined;
         let enemyKingIndex = this.kings[this.colorToMove == Piece.white ? 1 : 0].index;
-        let friendlyPieces = this.getFriendlyPieces(this.colorToMove);
-        for (let i = 0; i < friendlyPieces.length; i++) {
-            let piece = friendlyPieces[i];
-            let moves = Move.generateAvailableMoves(piece.index);
-            for (let j = 0; j < moves.length; j++) {
-                if (moves[j] == enemyKingIndex) {
-                    this.checkIndex = enemyKingIndex;
-                    return true;
-                }
-            }
+        if (Move.isAttacked(enemyKingIndex)) {
+            this.checkIndex = enemyKingIndex;
+            return true;
         }
         return false;
     }
@@ -165,10 +182,24 @@ class Board {
                 this.square[index] = piece;
                 let white = isUpperCase(char);
                 // set the piece's colour
-                this.square[index++].data |= white ? Piece.white : Piece.black;
+                this.square[index].data |= white ? Piece.white : Piece.black;
                 if (piece.getType() == Piece.king) {
+                    if (index == 4 || index == 60) {
+                        if (white && index == (this.playAsWhite ? 60 : 4)) {
+                            this.isKingHasMoved[white ? 0 : 1] = false;
+                        }
+                        else if (!white && index == (this.playAsWhite ? 4 : 60)) {
+                            this.isKingHasMoved[white ? 0 : 1] = false;
+                        }
+                    }
                     this.kings[white ? 0 : 1] = piece;
                 }
+                else if (piece.getType() == Piece.rook) {
+                    if (index == 0 || index == 7 || index == 56 || index == 63) {
+                        this.isRookHasMoved[getRookIndex(index)] = false;
+                    }
+                }
+                index++;
             }
         }
         Move.generateMoves();

@@ -2,9 +2,9 @@
 
 The features I have implemented:
 - [X] Basic movement rules
-- [ ] Doubled pawns
+- [ ] En passant
 - [X] Promote (queen only)
-- [ ] Castle
+- [X] Castle
 - [X] Check
 - [X] Checkmate
 - [ ] Timer

@@ -41,6 +41,16 @@ class Piece {
                 return Piece.knight;
         }
     }
+    static includesData(moves, ...datas) {
+        for (let move of moves) {
+            for (let data of datas) {
+                if (Board.get().square[move].data == data) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 // none represents an empty square
 Piece.none = 0;

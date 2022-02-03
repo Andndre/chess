@@ -92,7 +92,7 @@ class Renderer {
 		// rotate when it's enemy's turn
 		let sign = 1;
 		let div = 1;
-		if (rotate) {
+		if (rotate && flip) {
 			ctx.translate(
 				(x / 2) * boxScale + boxScale,
 				(y / 2) * boxScale + boxScale

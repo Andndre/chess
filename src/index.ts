@@ -1,3 +1,18 @@
+let param = new URLSearchParams(window.location.search);
+
+let fen =
+	param.get("fen") ||
+	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let flip = (param.get("flip") || "1") == "1";
+let rel = param.get("fen") == null || param.get("flip") == null;
+
+if (rel) {
+	window.location.search = new URLSearchParams({
+		fen: fen,
+		flip: flip ? "1" : "0",
+	}).toString();
+}
+
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
 let size: number;
@@ -7,9 +22,7 @@ let scale = window.devicePixelRatio;
 window.onload = () => {
 	canvas = document.getElementById("canvas") as HTMLCanvasElement;
 	ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-	Board.get().loadFenPositions(
-		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	);
+	Board.get().loadFenPositions(fen);
 	let renderer = Renderer.get();
 	onResize();
 	window.addEventListener("resize", onResize);

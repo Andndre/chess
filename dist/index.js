@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+let param = new URLSearchParams(window.location.search);
+let fen = param.get("fen") ||
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let flip = (param.get("flip") || "1") == "1";
+let rel = param.get("fen") == null || param.get("flip") == null;
+if (rel) {
+    window.location.search = new URLSearchParams({
+        fen: fen,
+        flip: flip ? "1" : "0",
+    }).toString();
+}
 let canvas;
 let ctx;
 let size;
@@ -16,7 +27,7 @@ let scale = window.devicePixelRatio;
 window.onload = () => {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    Board.get().loadFenPositions("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    Board.get().loadFenPositions(fen);
     let renderer = Renderer.get();
     onResize();
     window.addEventListener("resize", onResize);

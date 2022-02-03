@@ -79,7 +79,6 @@ class Board {
 		this.lastMoveFromData = this.square[move.from].data;
 
 		if (!test) {
-			console.log(move);
 			// make isRookHasMoved[i] true if the move.from or the move.to is a rook
 			let idx = getRookIndex(move.from);
 			if (idx != -1) {

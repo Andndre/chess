@@ -124,7 +124,6 @@ class Move {
 						}
 					}
 					let rookIndex = getRookIndex(from + sign * (i + 1));
-					console.log(kingMove);
 					if (
 						canCastle &&
 						!board.isRookHasMoved[rookIndex] &&

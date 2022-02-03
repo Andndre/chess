@@ -71,7 +71,11 @@ class Renderer {
 	}
 
 	public drawPiece(piece: Piece): void {
+		ctx.save();
+		let board = Board.get();
 		let black = piece.isColor(Piece.black);
+		let rotate =
+			board.colorToMove == (board.playAsWhite ? Piece.black : Piece.white);
 		let singleSpriteSize = (this.sprite.width as number) / 6;
 		let sy = black ? singleSpriteSize : 0;
 		let boxScale = scaledSize / 8;
@@ -85,6 +89,18 @@ class Renderer {
 				Piece.pawn,
 			].indexOf(piece.getType()) * singleSpriteSize;
 		let [x, y] = getCoords(piece.index);
+		// rotate when it's enemy's turn
+		let sign = 1;
+		let div = 1;
+		if (rotate) {
+			ctx.translate(
+				(x / 2) * boxScale + boxScale,
+				(y / 2) * boxScale + boxScale
+			);
+			ctx.rotate(Math.PI);
+			sign = -1;
+			div = 2;
+		}
 		// draw the piece
 		ctx.drawImage(
 			this.sprite,
@@ -92,10 +108,12 @@ class Renderer {
 			sy,
 			singleSpriteSize,
 			singleSpriteSize,
-			x * boxScale,
-			y * boxScale,
+			(x * boxScale * sign) / div,
+			(y * boxScale * sign) / div,
 			boxScale,
 			boxScale
 		);
+
+		ctx.restore();
 	}
 }

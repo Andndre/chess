@@ -1,0 +1,25 @@
+{
+	"name": "chess",
+	"version": "1.0.0",
+	"description": "chess clone from scratch",
+	"main": "server.js",
+	"type": "module",
+	"scripts": {
+		"start": "tsc && node server.js",
+		"dev": "nodemon -e ts --exec \"npm run start\""
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Andndre/chess.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Andndre/chess/issues"
+	},
+	"homepage": "https://github.com/Andndre/chess#readme",
+	"devDependencies": {
+		"nodemon": "^2.0.16"
+	}
+}

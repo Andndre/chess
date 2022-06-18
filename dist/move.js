@@ -1,15 +1,22 @@
-"use strict";
-class Move {
+import { getCoords, getIndex } from "./coordinates.js";
+import { board } from "./globals.js";
+import Piece from "./piece.js";
+import { getRookIndex } from "./utils.js";
+export default class Move {
     constructor(from, to) {
         this.from = from;
         this.to = to;
     }
-    static insertAvMove({ move, moves, insertIf = ["enemy", "none"], }) {
-        let board = Board.get();
-        let piece = board.square[move.from];
-        let pieceTo = board.square[move.to];
-        let color = piece.getColor();
-        let colorTo = pieceTo.getColor();
+    /**
+     * The middleware of the move generation.
+     * @param  - move - the move to be inserted
+     * @returns - true if the move is in the {insertIf} array
+     */
+    static insertMiddleware({ move, moves, insertIf = ["enemy", "none"], }) {
+        const piece = board.square[move.from];
+        const pieceTo = board.square[move.to];
+        const color = piece.getColor();
+        const colorTo = pieceTo.getColor();
         if (Piece.invertColor(color) == colorTo) {
             if (insertIf.indexOf("enemy") != -1) {
                 moves.push(move.to);
@@ -32,16 +39,15 @@ class Move {
     }
     // check if move is legal
     isLegal() {
-        let board = Board.get();
         let result = board.move(this, true);
         board.undoMove();
         return !result;
     }
     // get all possible moves
     static generateAvailableLegalMoves(from) {
-        let result = [];
+        const result = [];
         // generate move using `generateAvailableMoves` function and insert it into `result` array and then filter it so all moves that are not legal are removed
-        let moves = Move.generateAvailableMoves(from);
+        const moves = Move.generateAvailableMoves(from);
         for (let i = 0; i < moves.length; i++) {
             let move = new Move(from, moves[i]);
             if (move.isLegal()) {
@@ -50,16 +56,22 @@ class Move {
         }
         return result;
     }
+    /**
+     * Generate all possible moves for the current player
+     * @returns - true if no move is available (checkmate)
+     */
     static generateMoves() {
-        let board = Board.get();
         let checkMate = true;
+        /* Generating all the possible moves for the current player. */
         for (let i = 0; i < 64; i++) {
-            let piece = board.square[i];
+            const piece = board.square[i];
+            /* Skip if the color is not the color of the current player */
             if (piece.getColor() == Piece.none ||
                 piece.getColor() != board.colorToMove) {
                 continue;
             }
-            let moves = Move.generateAvailableLegalMoves(i);
+            const moves = Move.generateAvailableLegalMoves(i);
+            /* If all the pieces cannot move, then it is checkmate */
             if (checkMate) {
                 checkMate = moves.length == 0;
             }
@@ -68,7 +80,6 @@ class Move {
         return checkMate;
     }
     static generateAvailableMoves(from) {
-        let board = Board.get();
         let result = [];
         let piece = board.square[from];
         let white = Piece.isColor(piece.data, Piece.white);
@@ -120,62 +131,82 @@ class Move {
         }
         return result;
     }
+    /**
+     * The function returns an array of possible moves for a pawn
+     * @param {number} from - The index of the piece that is moving.
+     * @returns Available moves for the pawn (indexes of the squares)
+     */
     static pawnMove(from) {
         let result = [];
-        let board = Board.get();
+        /* Up if the pawn is white */
         let offset = board.square[from].getColor() ==
             (board.playAsWhite ? Piece.white : Piece.black)
             ? -8
             : 8;
+        /* Final index */
         let index = from + offset;
         let [, y] = getCoords(from);
-        if (Move.insertAvMove({
+        /* Insert move forward if the square is empty */
+        if (Move.insertMiddleware({
             move: new Move(from, index),
             moves: result,
             insertIf: ["none"],
         })) {
+            /* If the pawn never moved, it can move two squares */
             if (y == (offset == 8 ? 1 : 6)) {
-                Move.insertAvMove({
+                Move.insertMiddleware({
                     move: new Move(from, index + offset),
                     moves: result,
                     insertIf: ["none"],
                 });
             }
         }
+        /* Checking if the index is not on the left side of the board. */
         if (index % 8 != 0) {
-            Move.insertAvMove({
+            /* Pawn can capture diagonally to the left.*/
+            Move.insertMiddleware({
                 move: new Move(from, index - 1),
                 moves: result,
                 insertIf: ["enemy"],
             });
+            // TODO: enpassant
         }
+        /*
+        Checking if the index is not on the right side of the board.
+        Note: 0 mod 8 = 0
+        */
         if ((index - 7) % 8 != 0) {
-            Move.insertAvMove({
+            /* Pawn can capture diagonally to the right.*/
+            Move.insertMiddleware({
                 move: new Move(from, index + 1),
                 moves: result,
                 insertIf: ["enemy"],
             });
+            // TODO: enpassant
         }
         return result;
     }
+    /**
+     * @param index - index of the piece
+     * @returns - true if the piece was attacked
+     */
     static isAttacked(index) {
-        let board = Board.get();
+        /* Checking if the piece type is not none. */
         if (board.square[index].getType() == 0)
             return false;
+        /* Enemy's color */
         let color = Piece.invertColor(board.square[index].getColor());
         let moveFuncs = [
             Move.alignAxisMove,
             Move.diagonalAxisMove,
             Move.kingMove,
             Move.knightMove,
-            Move.pawnMove,
         ];
         let movePieces = [
             [color | Piece.rook, color | Piece.queen],
             [color | Piece.bishop, color | Piece.queen],
             [color | Piece.king],
             [color | Piece.knight],
-            [color | Piece.pawn],
         ];
         for (let idx in moveFuncs) {
             let moves = moveFuncs[idx](index);
@@ -184,8 +215,33 @@ class Move {
                 return true;
             }
         }
+        let offset = board.square[index].getColor() ==
+            (board.playAsWhite ? Piece.white : Piece.black)
+            ? -8
+            : 8;
+        if (index + offset < 0 && index + offset >= 64)
+            return false;
+        if (index % 8 != 0) {
+            let piece = board.square[index + offset + 1];
+            if (piece.getType() == Piece.pawn && piece.getColor() == color) {
+                // console.log("attacked by", index + offset - 1);
+                return true;
+            }
+        }
+        if ((index - 7) % 8 != 0) {
+            let piece = board.square[index + offset + 1];
+            if (piece.getType() == Piece.pawn && piece.getColor() == color) {
+                // console.log("attacked by", index + offset + 1);
+                return true;
+            }
+        }
+        // console.log("isAttacked false");
         return false;
     }
+    /**
+     * @param {number} from - The index of the piece you want to move
+     * @returns Available moves of the knight (indexes of the squares)
+     */
     static knightMove(from) {
         let result = [];
         let [x, y] = getCoords(from);
@@ -193,6 +249,7 @@ class Move {
             [-2, 2],
             [-1, 1],
         ];
+        /* Checking all the possible moves for the knight. */
         for (let i = 0; i < 2; i++) {
             for (let xOffset of range[i]) {
                 for (let yOffset of range[1 - i]) {
@@ -202,12 +259,19 @@ class Move {
                         y + yOffset > 7)
                         continue;
                     let index = getIndex(x + xOffset, y + yOffset);
-                    Move.insertAvMove({ move: new Move(from, index), moves: result });
+                    Move.insertMiddleware({
+                        move: new Move(from, index),
+                        moves: result,
+                    });
                 }
             }
         }
         return result;
     }
+    /**
+     * @param {number} from - the index of the piece you want to move
+     * @returns Available moves of the king (indexes of the squares)
+     */
     static kingMove(from) {
         let result = [];
         let range = [
@@ -229,12 +293,11 @@ class Move {
             if (xFinal < 0 || xFinal > 7 || yFinal < 0 || yFinal > 7)
                 continue;
             let index = getIndex(xFinal, yFinal);
-            Move.insertAvMove({ move: new Move(from, index), moves: result });
+            Move.insertMiddleware({ move: new Move(from, index), moves: result });
         }
         return result;
     }
     static alignAxisMove(from) {
-        let board = Board.get();
         let piece = board.square[from];
         let colorToMove = piece.getColor();
         let moves = [];
@@ -255,7 +318,6 @@ class Move {
         return moves;
     }
     static diagonalAxisMove(from) {
-        let board = Board.get();
         let piece = board.square[from];
         let colorToMove = piece.getColor();
         let moves = [];

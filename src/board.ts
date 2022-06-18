@@ -1,14 +1,23 @@
-class Board {
+import { BoardData } from "./boardData.js";
+import { getCoords, getIndex } from "./coordinates.js";
+import Move from "./move.js";
+import Piece from "./piece.js";
+import { fillTypeRange, getRookIndex, isUpperCase } from "./utils.js";
+
+export default class Board {
 	static instance?: Board;
+	static historyIndex = -1;
 
 	public colorToMove: number = Piece.white;
 	public lastMove?: Move;
 	public lastLastMove?: Move;
 
+	public history: BoardData[] = [];
+
 	public lastMoveToData?: number;
 	public lastMoveFromData?: number;
 
-	public checkIndex?: number;
+	public checkIndex = -1;
 	public checkMate = false;
 
 	public isKingHasMoved: boolean[] = [true, true];
@@ -128,7 +137,17 @@ class Board {
 		this.lastLastMove = this.lastMove;
 		this.lastMove = new Move(move.from, move.to);
 
-		return this.isCheck();
+		let check = this.isCheck();
+
+		if (!test) {
+			this.checkIndex = check[1];
+			this.history.push({
+				fen: this.getFenString(),
+				lastMove: this.lastMove,
+			});
+		}
+
+		return check[0];
 	}
 
 	public undoMove() {
@@ -145,17 +164,22 @@ class Board {
 		this.lastLastMove = undefined;
 	}
 
-	public isCheck(): boolean {
-		this.checkIndex = undefined;
+	/**
+	 * @returns - [boolean, number], true if the king is in check, and the index of the square that is in check
+	 */
+	public isCheck(): [boolean, number] {
+		this.checkIndex = -1;
 		let enemyKingIndex =
 			this.kings[this.colorToMove == Piece.white ? 1 : 0].index;
 		if (Move.isAttacked(enemyKingIndex)) {
-			this.checkIndex = enemyKingIndex;
-			return true;
+			return [true, enemyKingIndex];
 		}
-		return false;
+		return [false, -1];
 	}
 
+	/**
+	 * @returns All the pieces on the board.
+	 */
 	public getAllPieces(): Piece[] {
 		let pieces: Piece[] = [];
 		for (let i = 0; i < 64; i++) {
@@ -167,6 +191,11 @@ class Board {
 		return pieces;
 	}
 
+	/**
+	 * This function returns an array of pieces that are the same color as the color passed in.
+	 * @param {number} color - number - The color of the pieces you want to get.
+	 * @returns An array of pieces that are the same color as the color passed in.
+	 */
 	public getFriendlyPieces(color: number): Piece[] {
 		let pieces: Piece[] = [];
 		for (let piece of this.square) {
@@ -231,5 +260,36 @@ class Board {
 			}
 		}
 		Move.generateMoves();
+	}
+
+	/**
+	 * @returns The FEN string of the board.
+	 */
+	public getFenString() {
+		let result = "";
+		let noneCounter = 0;
+		for (let file = 0; file < 8; file++) {
+			if (noneCounter != 0) {
+				result += noneCounter;
+				noneCounter = 0;
+			}
+			if (file != 0) {
+				result += "/";
+			}
+			for (let rank = 0; rank < 8; rank++) {
+				let index = getIndex(rank, file);
+				if (this.square[index].data == Piece.none) {
+					noneCounter++;
+					continue;
+				}
+				if (noneCounter != 0) {
+					result += noneCounter;
+					noneCounter = 0;
+				}
+				let pieceChar = this.square[index].getPieceChar();
+				result += pieceChar;
+			}
+		}
+		return result;
 	}
 }

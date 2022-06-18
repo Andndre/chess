@@ -1,9 +1,9 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "watch": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "strict": true
-  }
+	"compilerOptions": {
+		"target": "ES2017",
+		// "watch": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"strict": true
+	}
 }

@@ -1,6 +1,6 @@
 # Chess
 
-The features I have implemented: (for future me)
+The features I have implemented:
 - [X] Basic movement rules
 - [ ] En passant
 - [X] Promote (queen only)

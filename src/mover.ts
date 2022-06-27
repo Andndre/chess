@@ -65,7 +65,6 @@ export class Mover {
 			);
 
 			const current = Piece.invertColor(this.current);
-			console.log(current);
 
 			this.timers[current].pause();
 			const enemy = Piece.invertColor(current);

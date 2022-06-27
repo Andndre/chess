@@ -2,6 +2,7 @@ import { Board } from "./board.js";
 import { directionOffsets, DOWN, NONE, UP } from "./constants.js";
 import { getCoords, getIndex } from "./coordinates.js";
 import { Color, Piece, Type } from "./piece.js";
+import { Timer } from "./timer.js";
 import { CellStatus, Move } from "./types.js";
 import { log } from "./utils.js";
 
@@ -21,6 +22,18 @@ export class Mover {
 	} as CheckIndex;
 	legalMoves: Move[][] = [];
 	checkMate = false;
+	timers = {
+		16: new Timer(
+			document.getElementById("timer-p1") as HTMLElement,
+			3600,
+			"Black"
+		),
+		8: new Timer(
+			document.getElementById("timer-p2") as HTMLElement,
+			3600,
+			"White"
+		),
+	};
 	constructor(board: Board) {
 		log(1, "creating Mover");
 		this.board = board;
@@ -29,6 +42,9 @@ export class Mover {
 	}
 	selectTile(index: number) {
 		log(1, "selecting tile ", index);
+		if (this.timers[16].seconds === 0 || this.timers[8].seconds === 0) {
+			return;
+		}
 		const isFriendly = this.board.tiles[index].isColor(this.current);
 
 		if (isFriendly) {
@@ -47,6 +63,13 @@ export class Mover {
 					return move.to.index == index;
 				})!
 			);
+
+			const current = Piece.invertColor(this.current);
+			console.log(current);
+
+			this.timers[current].pause();
+			const enemy = Piece.invertColor(current);
+			this.timers[enemy].start();
 
 			this.checkIndex[16] = NONE;
 			this.checkIndex[8] = NONE;

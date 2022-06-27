@@ -4,9 +4,25 @@
 	background-color: rgb(34, 34, 34);
 }
 
+body {
+	height: 100vh;
+}
+
 canvas {
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+
+.timers {
+	height: 100%;
+	color: white;
+	text-align: center;
+	display: flex;
+	justify-content: space-between;
+}
+
+.timer {
+	padding: 1em;
 }

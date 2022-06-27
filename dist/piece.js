@@ -1,8 +1,28 @@
-import { board } from "./globals.js";
-export default class Piece {
+export var Type;
+(function (Type) {
+    Type[Type["none"] = 0] = "none";
+    Type[Type["king"] = 1] = "king";
+    Type[Type["queen"] = 2] = "queen";
+    Type[Type["knight"] = 3] = "knight";
+    Type[Type["bishop"] = 4] = "bishop";
+    Type[Type["pawn"] = 5] = "pawn";
+    Type[Type["rook"] = 6] = "rook";
+})(Type || (Type = {}));
+export var Color;
+(function (Color) {
+    Color[Color["white"] = 16] = "white";
+    Color[Color["black"] = 8] = "black";
+    Color[Color["none"] = 0] = "none";
+})(Color || (Color = {}));
+/*
+EXAMPLE:
+white king => 16 | 1 = 0b10000 | 0b00001 = 0b10001 = 17
+*/
+export class Piece {
     constructor(index, data) {
+        this.moved = 0;
         this.index = index;
-        this.data = data;
+        this.code = data;
     }
     /**
      * "Returns true if the piece is the same color as the color passed in."
@@ -12,19 +32,26 @@ export default class Piece {
      * @returns A boolean value.
      */
     static isColor(piece, color) {
+        // test
         return Piece.getColor(piece) == color;
     }
     /**
      * This function returns true if the piece is the color passed in, otherwise it returns false.
-     * @param {number} color - 16 for white, 8 for black
+     * @param {Color} color - 16 for white, 8 for black
      * @returns A boolean value.
      */
     isColor(color) {
-        return Piece.isColor(this.data, color);
+        return Piece.isColor(this.code, color);
+    }
+    static isType(piece, type) {
+        return Piece.getType(piece) == type;
+    }
+    isType(type) {
+        return Piece.isType(this.code, type);
     }
     /**
      * It returns the type of the piece.
-     * @param {number} piece - The piece to get the type of.
+     * @param piece - The piece to get the type of.
      * @returns The piece type.
      */
     static getType(piece) {
@@ -35,7 +62,7 @@ export default class Piece {
      * @returns The data property is being returned.
      */
     getType() {
-        return this.data & 7;
+        return this.code & 7;
     }
     /**
      * It returns the color of the piece.
@@ -50,15 +77,15 @@ export default class Piece {
      * @returns The color of the piece.
      */
     getColor() {
-        return this.data & 24;
+        return this.code & 24;
     }
     /**
      * If the color is 16 (white), return 8 (black), otherwise return 16 (white).
-     * @param {number} color - The color of the text.
+     * @param {Color} color - The color of the text.
      * @returns The color is being returned.
      */
     static invertColor(color) {
-        return color == 16 ? 8 : 16;
+        return color == Color.white ? Color.black : Color.white;
     }
     /**
      * It returns the piece type from the char.
@@ -68,28 +95,18 @@ export default class Piece {
     static getTypeFromChar(char) {
         switch (char.toLowerCase()) {
             case "p":
-                return Piece.pawn;
+                return Type.pawn;
             case "b":
-                return Piece.bishop;
+                return Type.bishop;
             case "k":
-                return Piece.king;
+                return Type.king;
             case "q":
-                return Piece.queen;
+                return Type.queen;
             case "r":
-                return Piece.rook;
+                return Type.rook;
             case "n":
-                return Piece.knight;
+                return Type.knight;
         }
-    }
-    static includesData(moves, ...datas) {
-        for (let move of moves) {
-            for (let data of datas) {
-                if (board.square[move].data == data) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
     /**
      * It returns a string that represents the piece's type and color.
@@ -99,39 +116,28 @@ export default class Piece {
     getPieceChar() {
         let char = "";
         switch (this.getType()) {
-            case Piece.bishop:
+            case Type.bishop:
                 char = "b";
                 break;
-            case Piece.king:
+            case Type.king:
                 char = "k";
                 break;
-            case Piece.knight:
+            case Type.knight:
                 char = "n";
                 break;
-            case Piece.pawn:
+            case Type.pawn:
                 char = "p";
                 break;
-            case Piece.queen:
+            case Type.queen:
                 char = "q";
                 break;
-            case Piece.rook:
+            case Type.rook:
                 char = "r";
                 break;
         }
-        if (this.getColor() == Piece.white) {
+        if (this.getColor() == Color.white) {
             return char.toUpperCase();
         }
         return char;
     }
 }
-// none represents an empty square
-Piece.none = 0; // ...0
-Piece.king = 1; // ...1
-Piece.queen = 2; // ...10
-Piece.knight = 3; // ...11
-Piece.bishop = 4; // ...100
-Piece.pawn = 5; // ...101
-Piece.rook = 6; // ...110
-// for example in binary, 10001. the first two bit represents the colour and the rest represents the type
-Piece.white = 16;
-Piece.black = 8;

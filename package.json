@@ -5,8 +5,8 @@
 	"main": "server.js",
 	"type": "module",
 	"scripts": {
-		"start": "tsc && node server.js",
-		"dev": "nodemon -e ts --exec \"npm run start\""
+		"start": "tsc && python http_server.py",
+		"dev": "nodemon -e ts -x \"npm run start\""
 	},
 	"repository": {
 		"type": "git",

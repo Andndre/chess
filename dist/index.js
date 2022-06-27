@@ -1,44 +1,45 @@
+import { Board } from "./board.js";
+import { CanvasManager } from "./canvasManager.js";
+import { NONE } from "./constants.js";
 import { getClickedIndex } from "./coordinates.js";
-import { canvas, renderer, setScaledSize, setSize, scale, board, } from "./globals.js";
+import { Mover } from "./mover.js";
+import { Renderer } from "./renderer.js";
 import { sleep } from "./utils.js";
-let param = new URLSearchParams(window.location.search);
-let fen = param.get("fen") ||
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-let reload = param.get("fen") == null || param.get("flip") == null;
-export const flip = (param.get("flip") || "1") == "1";
-/* Reloading the page with the new parameters. */
-if (reload) {
-    window.location.search = new URLSearchParams({
-        fen: fen,
-        flip: flip ? "1" : "0",
-    }).toString();
-}
-window.onload = () => {
-    board.loadFenPositions(fen);
-    onResize();
-    window.addEventListener("resize", onResize);
-    canvas.addEventListener("click", async (event) => {
-        let index = getClickedIndex(event);
-        board.select(index);
-        renderer.drawBoard();
-        // without this the alert will pause the game before the canvas gets updated
-        await sleep(10);
-        if (board.checkMate) {
-            alert("Checkmate!");
-        }
-    });
-    /* Adding an event listener to the document for when the fullscreen changes. */
-    ["", "webkit", "moz", "ms"].forEach((prefix) => document.addEventListener(prefix + "fullscreenchange", onResize, false));
-};
-/**
- * Its called when the window is resized.
- */
-function onResize() {
-    let size = setSize(window.innerWidth > window.innerHeight
-        ? window.innerHeight
-        : window.innerWidth);
-    let scaledSize = setScaledSize(Math.floor(size * scale));
-    canvas.width = scaledSize;
-    canvas.height = scaledSize;
-    renderer.drawBoard();
+const canvas = document.getElementById("canvas");
+const canvasManager = new CanvasManager(canvas);
+const board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+const mover = new Mover(board);
+const renderer = new Renderer(board, canvasManager, mover);
+windowResized();
+renderer.render();
+window.addEventListener("resize", windowResized);
+canvas.addEventListener("click", async (event) => {
+    console.clear();
+    const index = getClickedIndex(event, canvasManager);
+    mover.selectTile(index);
+    renderer.render();
+    // without this the alert will pause the game before the canvas gets updated
+    await sleep(10);
+    if (mover.checkMate) {
+        alert("Checkmate!");
+    }
+    // console.table(board.tiles);
+});
+window.addEventListener("keydown", (ev) => {
+    if (ev.key === "z" && ev.ctrlKey) {
+        console.clear();
+        mover.undoMove();
+        mover.checkIndex[16] = NONE;
+        mover.checkIndex[8] = NONE;
+        mover.generateNextMove();
+        renderer.render();
+    }
+});
+/* Adding an event listener to the document for when the fullscreen changes. */
+["", "webkit", "moz", "ms"].forEach((prefix) => document.addEventListener(prefix + "fullscreenchange", windowResized, false));
+function windowResized() {
+    const canvasSize = Math.min(window.innerHeight, window.innerWidth);
+    canvasManager.setHeight(canvasSize);
+    canvasManager.setWidth(canvasSize);
+    renderer.render();
 }

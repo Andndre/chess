@@ -1,3 +1,6 @@
+import { Board } from "./board.js";
+import { CanvasManager } from "./canvasManager.js";
+import { NONE } from "./constants.js";
 import {
 	availableMoveColor,
 	checkColor,
@@ -6,152 +9,142 @@ import {
 	moveFromColor,
 	moveToColor,
 } from "./config.js";
-import { getCoords, getIndex } from "./coordinates.js";
-import { board, ctx, getScaledSize } from "./globals.js";
-import { flip } from "./index.js";
-import Move from "./move.js";
-import Piece from "./piece.js";
+import { getCoords } from "./coordinates.js";
+import { Mover } from "./mover.js";
+import { Color, Piece } from "./piece.js";
+import { SpritesManager } from "./spritesManager.js";
+import { Move, Vector } from "./types.js";
+import { log } from "./utils.js";
 
-/* It draws a chess board and pieces on a canvas. */
-export default class Renderer {
-	static instance?: Renderer;
-	public sprite: CanvasImageSource;
-	private constructor() {
-		this.sprite = document.getElementById("sprite") as CanvasImageSource;
+export class Renderer {
+	board: Board;
+	mover: Mover;
+	sprite: SpritesManager;
+	canvasManager: CanvasManager;
+	constructor(board: Board, canvasManager: CanvasManager, mover: Mover) {
+		log(1, "creating Renderer");
+		this.board = board;
+		this.sprite = new SpritesManager(
+			document.getElementById("sprite") as CanvasImageSource,
+			6,
+			2
+		);
+		this.canvasManager = canvasManager;
+		this.mover = mover;
+		log(-1, "");
 	}
-
-	/**
-	 * If the instance is undefined, create a new instance and return it. Otherwise, return the existing
-	 * instance.
-	 * @returns The instance of the Renderer class.
-	 */
-	static get(): Renderer {
-		if (this.instance == undefined) {
-			this.instance = new Renderer();
-		}
-		return this.instance!;
-	}
-
 	/**
 	 * Draw a square on the canvas at the given index, with the given color.
 	 * @param {string} color - The color of the square.
-	 * @param {number} index - The index of the square you want to draw.
+	 * @param {number[]} coords - The coordinates of the square you want to draw.
 	 */
-	public drawSquare(color: string, index: number): void {
-		let [x, y] = getCoords(index);
+	drawSquare(color: string, coords: Vector): void {
+		// log(1, "drawing square ", color, " in ", coords);
+		const ctx = this.canvasManager.getContext();
 		ctx.fillStyle = color;
-		let square = getScaledSize() / 8;
-		ctx.fillRect(x * square, y * square, square, square);
+		let square = this.canvasManager.getCanvas().width / 8;
+		ctx.fillRect(coords.x * square, coords.y * square, square, square);
+		// log(-1, "");
 	}
 
 	/**
 	 * This function combines all the drawing functions.
 	 */
-	public drawBoard(): void {
+	render(): void {
+		// log(1, "---render---");
 		// draw the board
 		for (let file = 0; file < 8; file++) {
 			for (let rank = 0; rank < 8; rank++) {
 				// get the color of the square
-				let index = getIndex(file, rank);
 				let color = (file + rank) % 2 == 0 ? lightTileColor : darkTileColor;
 				// draw the square
-				this.drawSquare(color, index);
+				this.drawSquare(color, {
+					x: rank,
+					y: file,
+				});
 			}
 		}
-		if (board.checkIndex != -1) {
-			this.drawSquare(checkColor, board.checkIndex);
+		if (this.board.checkIndex != NONE) {
+			this.drawSquare(checkColor, getCoords(this.board.checkIndex));
 		}
 		// draw last move
-		if (board.lastMove != undefined) {
-			this.drawMove(board.lastMove!);
+		if (this.mover.history.length != 0) {
+			this.drawMove(this.mover.history[this.mover.history.length - 1]);
 		}
-		if (board.selectedIndex != -1) {
-			this.drawSquare(moveToColor, board.selectedIndex);
+		if (this.mover.selectedIndex != NONE) {
+			this.drawSquare(moveToColor, getCoords(this.mover.selectedIndex));
 		}
+
 		// draw available moves
 		this.drawAvailableMoves();
+
+		// draw check
+		this.drawCheck();
+
 		// draw the pieces
 		this.drawPieces();
+		// log(-1, "");
 	}
 
 	/**
 	 * This function draws a move on the board. It draws a square from the start index to the end index.
 	 * @param move - Move - the move to draw
 	 */
-	public drawMove(move: Move): void {
-		this.drawSquare(moveFromColor, move.from);
-		this.drawSquare(moveToColor, move.to);
+	drawMove(move: Move): void {
+		// log(1, "drawing move ", move);
+		this.drawSquare(moveFromColor, getCoords(move.from.index));
+		this.drawSquare(moveToColor, getCoords(move.to.index));
+		// log(-1, "");
+	}
+
+	drawCheck(): void {
+		for (const color of [Color.white, Color.black]) {
+			// This line will not be evaluated ever! because Color.none will never be used.
+			// Just because the typescript compiler was yelling at me ;(
+			if (color == Color.none) continue;
+
+			if (this.mover.checkIndex[color] !== NONE) {
+				this.drawSquare(checkColor, getCoords(this.mover.checkIndex[color]));
+			}
+		}
 	}
 
 	/**
 	 * If a piece is selected, draw a square around all the available moves for that piece
 	 * @returns the index of the selected piece.
 	 */
-	public drawAvailableMoves(): void {
-		if (board.selectedIndex == -1) return;
-		let availableMoves = board.availableMoves[board.selectedIndex!];
-		for (let index of availableMoves) {
-			this.drawSquare(availableMoveColor, index);
+	drawAvailableMoves(): void {
+		const isNone = this.mover.selectedIndex == NONE;
+		// log(1, "drawing av moves ", isNone);
+
+		if (isNone) return;
+		const moves = this.mover.legalMoves[this.mover.selectedIndex];
+		for (const move of moves) {
+			this.drawSquare(availableMoveColor, getCoords(move.to.index));
 		}
+		// log(-1, "");
 	}
 
 	/**
 	 * This function draws all the pieces on the board.
 	 */
-	public drawPieces(): void {
-		let allPieces = board.getAllPieces();
-		for (let piece of allPieces) {
-			this.drawPiece(piece);
+	drawPieces(): void {
+		// log(1, "drawing pieces");
+		for (let i = 0; i < 64; i++) {
+			this.drawPiece(this.board.tiles[i]);
 		}
+		// log(-1, "");
 	}
 
 	/**
 	 * It draws a piece on the board
 	 * @param {Piece} piece - Piece - the piece to draw
 	 */
-	public drawPiece(piece: Piece): void {
-		ctx.save();
-		let black = piece.isColor(Piece.black);
-		let rotate =
-			board.colorToMove == (board.playAsWhite ? Piece.black : Piece.white);
-		let singleSpriteSize = (this.sprite.width as number) / 6;
-		let sy = black ? singleSpriteSize : 0;
-		let squareScale = getScaledSize() / 8;
-		let sx =
-			[
-				Piece.king,
-				Piece.queen,
-				Piece.bishop,
-				Piece.knight,
-				Piece.rook,
-				Piece.pawn,
-			].indexOf(piece.getType()) * singleSpriteSize;
-		let [x, y] = getCoords(piece.index);
-		// rotate when it's enemy's turn
-		let sign = 1;
-		let div = 1;
-		if (rotate && flip) {
-			ctx.translate(
-				(x / 2) * squareScale + squareScale,
-				(y / 2) * squareScale + squareScale
-			);
-			ctx.rotate(Math.PI);
-			sign = -1;
-			div = 2;
-		}
-		// draw the piece
-		ctx.drawImage(
-			this.sprite,
-			sx,
-			sy,
-			singleSpriteSize,
-			singleSpriteSize,
-			(x * squareScale * sign) / div,
-			(y * squareScale * sign) / div,
-			squareScale,
-			squareScale
-		);
-
-		ctx.restore();
+	drawPiece(piece: Piece): void {
+		// log(1, "drawing piece ", piece);
+		const { x: sx, y: sy } = this.sprite.getPieceCoords(piece);
+		const { x: dx, y: dy } = getCoords(piece.index);
+		this.sprite.drawToBoard(this.canvasManager, sx, sy, dx, dy, false);
+		// log(-1, "");
 	}
 }

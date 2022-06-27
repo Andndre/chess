@@ -23,7 +23,7 @@ canvas.addEventListener("click", async (event) => {
         alert("Checkmate!");
     }
 });
-window.addEventListener("keydown", (ev) => {
+canvas.addEventListener("keydown", (ev) => {
     if (ev.key === "z" && ev.ctrlKey) {
         mover.undoMove();
         mover.checkIndex[16] = NONE;

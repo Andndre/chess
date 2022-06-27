@@ -24,9 +24,9 @@ export class Piece {
 	code: number;
 	moved = 0;
 
-	constructor(index: number, data: number) {
+	constructor(index: number, code: number) {
 		this.index = index;
-		this.code = data;
+		this.code = code;
 	}
 
 	/**
@@ -36,7 +36,7 @@ export class Piece {
 	 * @param {number} color - 16 for white, 8 for black
 	 * @returns A boolean value.
 	 */
-	static isColor(piece: number, color: number) {
+	static isColor(piece: number, color: Color) {
 		// test
 		return Piece.getColor(piece) == color;
 	}
@@ -77,11 +77,11 @@ export class Piece {
 
 	/**
 	 * It returns the color of the piece.
-	 * @param {number} piece - The piece to get the color of.
+	 * @param {number} code - The piece to get the color of.
 	 * @returns The color of the piece.
 	 */
-	static getColor(piece: number) {
-		return piece & 24;
+	static getColor(code: number) {
+		return code & 24;
 	}
 
 	/**

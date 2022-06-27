@@ -410,7 +410,7 @@ export class Mover {
         return false;
     }
     /**
-     * @param {number} from - The index of the piece you want to move
+     * @param from - The index of the piece you want to move
      * @returns Available moves of the knight (indexes of the squares)
      */
     knightMove(from, obj = this) {

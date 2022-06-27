@@ -16,7 +16,7 @@ export class Renderer {
     /**
      * Draw a square on the canvas at the given index, with the given color.
      * @param {string} color - The color of the square.
-     * @param {number[]} coords - The coordinates of the square you want to draw.
+     * @param {Vector} coords - The coordinates of the square you want to draw.
      */
     drawSquare(color, coords) {
         // log(1, "drawing square ", color, " in ", coords);

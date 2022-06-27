@@ -19,10 +19,10 @@ EXAMPLE:
 white king => 16 | 1 = 0b10000 | 0b00001 = 0b10001 = 17
 */
 export class Piece {
-    constructor(index, data) {
+    constructor(index, code) {
         this.moved = 0;
         this.index = index;
-        this.code = data;
+        this.code = code;
     }
     /**
      * "Returns true if the piece is the same color as the color passed in."
@@ -66,11 +66,11 @@ export class Piece {
     }
     /**
      * It returns the color of the piece.
-     * @param {number} piece - The piece to get the color of.
+     * @param {number} code - The piece to get the color of.
      * @returns The color of the piece.
      */
-    static getColor(piece) {
-        return piece & 24;
+    static getColor(code) {
+        return code & 24;
     }
     /**
      * It returns the color of the piece.

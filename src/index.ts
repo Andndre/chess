@@ -18,7 +18,6 @@ renderer.render();
 
 window.addEventListener("resize", windowResized);
 canvas.addEventListener("click", async (event) => {
-	console.clear();
 	const index = getClickedIndex(event, canvasManager);
 	mover.selectTile(index);
 	renderer.render();
@@ -27,12 +26,10 @@ canvas.addEventListener("click", async (event) => {
 	if (mover.checkMate) {
 		alert("Checkmate!");
 	}
-	// console.table(board.tiles);
 });
 
 window.addEventListener("keydown", (ev) => {
 	if (ev.key === "z" && ev.ctrlKey) {
-		console.clear();
 		mover.undoMove();
 		mover.checkIndex[16] = NONE;
 		mover.checkIndex[8] = NONE;

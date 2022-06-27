@@ -52,15 +52,11 @@ export class Mover {
 			this.checkIndex[8] = NONE;
 
 			const enemyColor = this.current;
-			console.log(enemyColor);
 			const enemyKingIndex = this.getKingIndex(enemyColor);
 			const isCheck = this.isAttacked(enemyKingIndex);
 
-			console.log("HELLO");
-
 			if (isCheck) {
 				if (enemyColor !== Color.none) {
-					console.log("CHECK");
 					this.checkIndex[enemyColor] = enemyKingIndex;
 				}
 			}
@@ -151,7 +147,6 @@ export class Mover {
 		log(1, "clearing legal moves");
 		this.legalMoves.splice(0, this.legalMoves.length);
 		const { moves, checkMate } = this.generateMoves(this.current);
-		if (checkMate) console.log("CHECKMATE!");
 		this.checkMate = checkMate;
 		this.legalMoves.push(...moves);
 		log(-1, "");
@@ -212,7 +207,6 @@ export class Mover {
 
 		moves = moves.filter((move) => {
 			const isLegal = this.isLegal(move, kingIndex);
-			if (isLegal) console.log("legal");
 			return isLegal;
 		});
 
@@ -393,7 +387,6 @@ export class Mover {
 
 			// enpassant
 			const lastMove = this.history[this.history.length - 1];
-			console.log(lastMove);
 			if (
 				lastMove &&
 				lastMove.from.type === Type.pawn &&
@@ -401,7 +394,6 @@ export class Mover {
 				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
 			) {
 				log(1, "enpassant");
-				console.log("enpassant left");
 				result.push(
 					this.getMove(from, from + offset - 1, { capture: from - 1 })
 				);
@@ -423,7 +415,6 @@ export class Mover {
 
 			// enpassant
 			const lastMove = this.history[this.history.length - 1];
-			console.log(lastMove);
 			if (
 				lastMove &&
 				lastMove.from.type === Type.pawn &&
@@ -431,8 +422,6 @@ export class Mover {
 				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
 			) {
 				log(1, "enpassant");
-				console.log("enpassant right");
-				console.log(from + offset + 1);
 
 				result.push(
 					this.getMove(from, from + offset + 1, { capture: from + 1 })

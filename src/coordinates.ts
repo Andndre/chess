@@ -46,7 +46,9 @@ export function getClickedIndex(
 	canvasManager: CanvasManager
 ): number {
 	let { x, y } = getMousePos(event, canvasManager.getCanvas());
-	let squareScale = canvasManager.getCanvas().width / 8;
+
+	let squareScale =
+		canvasManager.getCanvas().width / canvasManager.getScale() / 8;
 	let index = getIndex(
 		Math.floor(x / squareScale),
 		Math.floor(y / squareScale)

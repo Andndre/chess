@@ -37,7 +37,7 @@ export function getMousePos(ev, canvas) {
  */
 export function getClickedIndex(event, canvasManager) {
     let { x, y } = getMousePos(event, canvasManager.getCanvas());
-    let squareScale = canvasManager.getCanvas().width / 8;
+    let squareScale = canvasManager.getCanvas().width / canvasManager.getScale() / 8;
     let index = getIndex(Math.floor(x / squareScale), Math.floor(y / squareScale));
     return index;
 }

@@ -21,6 +21,9 @@ export class ChessGame {
 		this.board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 		this.mover = new Mover(this.board);
 		this.renderer = new Renderer(this.board, this.canvasManager, this.mover);
+		this.mover.timers[16].element.style.display = "block";
+		this.mover.timers[8].element.style.display = "block";
+		canvas.style.display = "block";
 
 		this.windowResized();
 

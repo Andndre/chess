@@ -5,20 +5,29 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="./style.css" />
+		<link rel="shortcut icon" href="./assets/chess.png" type="image/x-icon" />
 		<title>Chess</title>
 	</head>
 	<body>
-		<img
-			id="sprite"
-			src="./assets/1280px-Chess_Pieces_Sprite.png"
-			alt=""
-			srcset=""
-			style="display: none"
-		/>
-		<canvas id="canvas"></canvas>
-		<div class="timers">
-			<h2 class="timer" id="timer-p1">TEST</h2>
-			<h2 class="timer" id="timer-p2">TEST 2</h2>
+		<!-- MAIN MENU -->
+		<div id="main-menu" class="main-menu">
+			<img src="./assets/chess.png" alt="" />
+			<h1 class="title">CHESS</h1>
+			<button id="play" class="button">Play</button>
+		</div>
+		<div class="chess">
+			<img
+				id="sprite"
+				src="./assets/1280px-Chess_Pieces_Sprite.png"
+				alt=""
+				srcset=""
+				style="display: none"
+			/>
+			<canvas id="canvas"></canvas>
+			<div class="timers">
+				<h2 class="timer" id="timer-p1">00:00:00</h2>
+				<h2 class="timer" id="timer-p2">00:00:00</h2>
+			</div>
 		</div>
 		<script type="module" src="./dist/index.js"></script>
 	</body>

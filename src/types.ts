@@ -20,3 +20,13 @@ export type Vector = {
 	x: number;
 	y: number;
 };
+
+export type ChessEvent =
+	| 'move'
+	| 'undo'
+	| 'capture'
+	| 'promote'
+	| 'castle'
+	| 'gameOver';
+export type GameOverReason = 'none' | 'checkMate' | 'draw';
+export type CallBackFunction = () => void;

@@ -71,13 +71,14 @@ export class Mover {
 		);
 	}
 
-	move(move: Move) {
+	move(move: Move, justATest = false) {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
 
 		if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 101) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'draw';
+			this.chessGame.onGameOver && this.chessGame.onGameOver();
 		}
 
 		from.moved++;
@@ -102,8 +103,10 @@ export class Mover {
 			this.board.tiles[move.capture.index].code = Type.none;
 		}
 
+		let castle = false;
 		// castle
 		if (move.move) {
+			castle = true;
 			const from_ = this.board.tiles[move.move.from.index];
 			from_.moved++;
 			const to_ = this.board.tiles[move.move.to.index];
@@ -127,14 +130,33 @@ export class Mover {
 		from.code = Type.none;
 		this.current = this.current == Color.white ? Color.black : Color.white;
 		this.history.push(move);
+
+		// run CallBack
+		if (!justATest) {
+			const cbMove = this.chessGame.onMove;
+			cbMove && cbMove();
+			if (castle) {
+				const cbCastle = this.chessGame.onCastle;
+				cbCastle && cbCastle();
+			}
+			if (promote) {
+				const cbPromote = this.chessGame.onMove;
+				cbPromote && cbPromote();
+			}
+		}
 	}
 
 	/**
 	 * Restore the board to the state it was in before the last move in the history was made
 	 */
-	undoMove() {
+	undoMove(justATest = false) {
 		const move = this.history.pop();
 		if (!move) return;
+
+		if (!justATest) {
+			const cb = this.chessGame.onUndo;
+			cb && cb();
+		}
 
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
@@ -189,6 +211,7 @@ export class Mover {
 		if (checkMate) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'checkMate';
+			this.chessGame.onGameOver && this.chessGame.onGameOver();
 		}
 		this.allMoves.push(...moves);
 	}
@@ -230,9 +253,9 @@ export class Mover {
 			kingIndex = move.to.index;
 		}
 
-		this.move(move);
+		this.move(move, true);
 		const isAttacked = this.isAttacked(kingIndex);
-		this.undoMove();
+		this.undoMove(true);
 		return !isAttacked;
 	}
 	/**

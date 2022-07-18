@@ -75,7 +75,11 @@ export class Mover {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
 
-		if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 101) {
+		if (
+			!justATest &&
+			this.chessGame.fiftyMoveRule &&
+			this.halfMoveClock() === 101
+		) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'draw';
 			this.chessGame.onGameOver && this.chessGame.onGameOver();
@@ -156,13 +160,12 @@ export class Mover {
 		if (!justATest) {
 			const cb = this.chessGame.onUndo;
 			cb && cb();
+			this.chessGame.gameOver = false;
+			this.chessGame.gameOverReason = 'not true';
 		}
 
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
-
-		this.chessGame.gameOver = false;
-		this.chessGame.gameOverReason = 'not true';
 
 		from.moved--;
 

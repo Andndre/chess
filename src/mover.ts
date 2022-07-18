@@ -81,6 +81,7 @@ export class Mover {
 
 		if (move.move) {
 			const from_ = this.board.tiles[move.move.from.index];
+			from_.moved++;
 			const to_ = this.board.tiles[move.move.to.index];
 			to_.code = from_.code;
 			from_.code = Type.none;

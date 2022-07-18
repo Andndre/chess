@@ -76,33 +76,39 @@ export class Mover {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
 
-		if (
-			!justATest &&
-			this.chessGame.fiftyMoveRule &&
-			this.halfMoveClock() === 101
-		) {
-			this.chessGame.gameOver = true;
-			this.chessGame.gameOverReason = 'draw';
-			this.chessGame.onGameOver && this.chessGame.onGameOver();
-		}
-
-		from.moved++;
-
-		if (from.isType(Type.king)) {
-			if (from.isColor(Color.white)) {
-				if (to.index - from.index === LEFT * 2) {
+		if (!justATest) {
+			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 101) {
+				this.chessGame.gameOver = true;
+				this.chessGame.gameOverReason = 'draw';
+				this.chessGame.onGameOver && this.chessGame.onGameOver();
+			}
+			if (from.isType(Type.rook)) {
+				if (from.isColor(Color.white)) {
+					if (from.index % 8 === 7) {
+						this.board.K = false;
+					} else {
+						this.board.Q = false;
+					}
+				} else {
+					if (from.index % 7 === 0) {
+						this.board.k = false;
+					} else {
+						this.board.q = false;
+					}
+				}
+			}
+			if (from.isType(Type.king)) {
+				if (from.isColor(Color.white)) {
+					this.board.K = false;
 					this.board.Q = false;
 				} else {
-					this.board.K = false;
-				}
-			} else {
-				if (to.index - from.index === LEFT * 2) {
-					this.board.q = false;
-				} else {
 					this.board.k = false;
+					this.board.q = false;
 				}
 			}
 		}
+
+		from.moved++;
 
 		if (move.capture) {
 			this.board.tiles[move.capture.index].code = Type.none;

@@ -108,17 +108,17 @@ export class Piece {
 	 */
 	static getTypeFromChar(char: string) {
 		switch (char.toLowerCase()) {
-			case "p":
+			case 'p':
 				return Type.pawn;
-			case "b":
+			case 'b':
 				return Type.bishop;
-			case "k":
+			case 'k':
 				return Type.king;
-			case "q":
+			case 'q':
 				return Type.queen;
-			case "r":
+			case 'r':
 				return Type.rook;
-			case "n":
+			case 'n':
 				return Type.knight;
 		}
 	}
@@ -128,26 +128,26 @@ export class Piece {
 	 * Upper case for white pieces and lower case for black pieces.
 	 * @returns A string representation of the piece.
 	 */
-	getPieceChar() {
-		let char = "";
+	toString() {
+		let char = '';
 		switch (this.getType()) {
 			case Type.bishop:
-				char = "b";
+				char = 'b';
 				break;
 			case Type.king:
-				char = "k";
+				char = 'k';
 				break;
 			case Type.knight:
-				char = "n";
+				char = 'n';
 				break;
 			case Type.pawn:
-				char = "p";
+				char = 'p';
 				break;
 			case Type.queen:
-				char = "q";
+				char = 'q';
 				break;
 			case Type.rook:
-				char = "r";
+				char = 'r';
 				break;
 		}
 		if (this.getColor() == Color.white) {

@@ -14,17 +14,14 @@ export function sleep(millisecondsDuration: number) {
 	});
 }
 
-let indentLog = 0;
-
 export function repeat(string: string, multiplier: number) {
-	let res = "";
+	let res = '';
 	for (let i = 0; i < multiplier; i++) {
 		res += string;
 	}
 	return res;
 }
 
-export function log(indent: number, ...message: any) {
-	// indentLog += indent;
-	// console.log(repeat("|", indentLog), ...message);
+export function randomFromArray<T>(array: T[]) {
+	return array[Math.floor(Math.random() * array.length)];
 }

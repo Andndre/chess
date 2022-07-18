@@ -1,3 +1,9 @@
-# Chess
+# Chess-Deno
 
-The [features](https://github.com/Andndre/chess/projects/1) I have implemented:
+A minimal Chess Engine fully written in typescript.
+
+This library includes:
+- Move validation
+- FEN support
+- String representation of piece types 
+- The board is a single-dimensional array.

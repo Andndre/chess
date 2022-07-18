@@ -1,29 +1,39 @@
-import { Color, Piece, Type } from "./piece.js";
-import { isUpperCase, log } from "./utils.js";
-import { getIndex } from "./coordinates.js";
-import { NONE } from "./constants.js";
+import { Color, Piece, Type } from './piece.ts';
+import { isUpperCase } from './utils.ts';
+import { getIndex } from './coordinates.ts';
+import { NONE } from './constants.ts';
 
 export class Board {
 	tiles: Piece[] = [];
 	numToEdge: number[][] = [];
 	checkMate = false;
-	attackedIndexes: number[] = [];
 	checkIndex = NONE;
+	/**
+	 * If white is permitted to castle on the Queen's side
+	 */
+	Q = true;
+	/**
+	 * If black is permitted to castle on the Queen's side
+	 */
+	q = true;
+	/**
+	 * If white is permitted to castle on the King's side
+	 */
+	K = true;
+	/**
+	 * If black is permitted to castle on the King's side,
+	 */
+	k = true;
 
-	constructor(fen: string) {
-		log(
-			1,
-			"precomputing the distance from each square to the edge of the board for each direction"
-		);
-		// precompute the distance from each square to the edge of the board for each direction
+	private constructor() {
 		for (let file = 0; file < 8; file++) {
 			for (let rank = 0; rank < 8; rank++) {
-				let up = 7 - rank;
-				let down = rank;
-				let left = file;
-				let right = 7 - file;
+				const up = 7 - rank;
+				const down = rank;
+				const left = file;
+				const right = 7 - file;
 
-				let squareIndex = getIndex(file, rank);
+				const squareIndex = getIndex(file, rank);
 
 				// define the distance to the edge of the board for each direction for each square
 				this.numToEdge[squareIndex] = [
@@ -38,22 +48,31 @@ export class Board {
 				];
 			}
 		}
-		this.loadFenString(fen);
-		log(-1, "");
 	}
 
-	loadFenString(fen: string) {
-		log(1, "loading fen string ", fen);
-		let index = 0;
-		let fenComponents = fen.split(" ");
-		let fenPositions = fenComponents[0].split("/");
+	/**
+	 *
+	 * @param fen FEN notation
+	 * @returns a new Board
+	 */
+	static fromFEN(fen: string) {
+		const board = new Board();
+		board.loadFenString(fen);
+		return board;
+	}
+
+	private loadFenString(fen: string) {
+		const fenComponents = fen.split(' ');
+		const fenPositions = fenComponents[0].split('/');
+		// load FEN positions
 		// loop through each row
-		for (let row of fenPositions) {
+		let index = 0;
+		for (const row of fenPositions) {
 			// loop through each character in the row
-			for (let char of row) {
+			for (const char of row) {
 				// if the character is a number, add that many blank squares to the board
 				if (char.match(/[0-9]/)) {
-					let num = Number.parseInt(char);
+					const num = Number.parseInt(char);
 					// fill with none
 					for (let i = index; i <= index + num; i++) {
 						this.tiles[i] = new Piece(i, Type.none);
@@ -63,15 +82,19 @@ export class Board {
 					continue;
 				}
 				// if the character is a letter, add that piece to the board
-				let piece = new Piece(index, Piece.getTypeFromChar(char)!);
+				const piece = new Piece(index, Piece.getTypeFromChar(char)!);
 				// add the piece to the board
 				this.tiles[index] = piece;
-				let white = isUpperCase(char);
+				const white = isUpperCase(char);
 				// set the piece's colour
 				this.tiles[index].code |= white ? Color.white : Color.black;
 				index++;
 			}
 		}
-		log(-1, "");
 	}
+
+	/**
+	 
+	 */
+	toString() {}
 }

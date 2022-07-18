@@ -1,10 +1,8 @@
-import { Board } from "./board.js";
-import { directionOffsets, DOWN, NONE, UP } from "./constants.js";
-import { getCoords, getIndex } from "./coordinates.js";
-import { Color, Piece, Type } from "./piece.js";
-import { Timer } from "./timer.js";
-import { CellStatus, Move } from "./types.js";
-import { log } from "./utils.js";
+import { Board } from './board.ts';
+import { directionOffsets, DOWN, NONE, UP } from './constants.ts';
+import { getCoords, getIndex } from './coordinates.ts';
+import { Color, Piece, Type } from './piece.ts';
+import { CellStatus, Move } from './types.ts';
 
 type CheckIndex = {
 	16: number;
@@ -20,55 +18,29 @@ export class Mover {
 		16: NONE,
 		8: NONE,
 	} as CheckIndex;
-	legalMoves: Move[][] = [];
+	/**
+	 * All moves for each tiles
+	 */
+	allMoves: Move[][] = [];
 	checkMate = false;
-	timers = {
-		16: new Timer(
-			document.getElementById("timer-p1") as HTMLElement,
-			3600,
-			"Black"
-		),
-		8: new Timer(
-			document.getElementById("timer-p2") as HTMLElement,
-			3600,
-			"White"
-		),
-	};
 	constructor(board: Board) {
-		log(1, "creating Mover");
 		this.board = board;
 		this.generateNextMove();
-		log(-1, "");
 	}
 	selectTile(index: number) {
-		log(1, "selecting tile ", index);
-		if (this.timers[16].seconds === 0 || this.timers[8].seconds === 0) {
-			return;
-		}
 		const isFriendly = this.board.tiles[index].isColor(this.current);
 
 		if (isFriendly) {
-			log(1, "friend");
 			this.selectedIndex = index;
-			log(-1, "");
 		} else if (
 			this.selectedIndex != NONE &&
-			!!this.legalMoves[this.selectedIndex].find(
-				(move) => move.to.index == index
-			)
+			this.allMoves[this.selectedIndex].find((move) => move.to.index == index)
 		) {
-			log(1, "move");
 			this.move(
-				this.legalMoves[this.selectedIndex].find((move) => {
+				this.allMoves[this.selectedIndex].find((move) => {
 					return move.to.index == index;
 				})!
 			);
-
-			const current = Piece.invertColor(this.current);
-
-			this.timers[current].pause();
-			const enemy = Piece.invertColor(current);
-			this.timers[enemy].start();
 
 			this.checkIndex[16] = NONE;
 			this.checkIndex[8] = NONE;
@@ -85,27 +57,29 @@ export class Mover {
 
 			this.selectedIndex = NONE;
 			this.generateNextMove();
-			log(-1, "");
 		} else {
-			log(1, "cancel move");
 			this.selectedIndex = NONE;
-			log(-1, "");
 		}
-		log(-1, "");
+	}
+
+	isValid(move: Move) {
+		if (!this.allMoves[move.from.index]) return false;
+		return !!this.allMoves[move.from.index].find(
+			(e) => e.to.index === move.to.index
+		);
 	}
 
 	move(move: Move) {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
-		log(1, "move from ", from.index, " to ", to.index);
 
 		from.moved++;
 
-		if (!!move.capture) {
+		if (move.capture) {
 			this.board.tiles[move.capture.index].code = Type.none;
 		}
 
-		if (!!move.move) {
+		if (move.move) {
 			const from_ = this.board.tiles[move.move.from.index];
 			const to_ = this.board.tiles[move.move.to.index];
 			to_.code = from_.code;
@@ -128,7 +102,6 @@ export class Mover {
 		from.code = Type.none;
 		this.current = this.current == Color.white ? Color.black : Color.white;
 		this.history.push(move);
-		log(-1, "");
 	}
 
 	/**
@@ -137,19 +110,18 @@ export class Mover {
 	undoMove() {
 		const move = this.history.pop();
 		if (!move) return;
-		log(1, "undo move ", move.to, " back to ", move.from);
 
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
 
 		from.moved--;
 
-		if (!!move.capture) {
+		if (move.capture) {
 			this.board.tiles[move.capture.index].code =
 				move.capture.color | move.capture.type;
 		}
 
-		if (!!move.move) {
+		if (move.move) {
 			const from_ = this.board.tiles[move.move.from.index];
 			const to_ = this.board.tiles[move.move.to.index];
 			to_.code = move.move.to.color | move.move.to.type;
@@ -159,27 +131,23 @@ export class Mover {
 		to.code = move.to.color | move.to.type;
 		from.code = move.from.color | move.from.type;
 		this.current = this.current == Color.white ? Color.black : Color.white;
-		log(-1, "");
 	}
 
 	/**
 	 * Fills the legal moves array with the legal moves for the current player
 	 */
 	generateNextMove() {
-		log(1, "clearing legal moves");
-		this.legalMoves.splice(0, this.legalMoves.length);
-		const { moves, checkMate } = this.generateMoves(this.current);
+		this.allMoves.splice(0, this.allMoves.length);
+		const { moves, checkMate } = this.__generateMoves__(this.current);
 		this.checkMate = checkMate;
-		this.legalMoves.push(...moves);
-		log(-1, "");
+		this.allMoves.push(...moves);
 	}
 
 	/**
 	 * @param {Color} color - The color of the player whose moves are being generated.
 	 * @returns An array of arrays of moves.
 	 */
-	generateMoves(color: Color) {
-		log(1, "generating moves", color);
+	__generateMoves__(color: Color) {
 		const moves: Move[][] = [];
 		const kingIndex = this.getKingIndex(color);
 
@@ -188,7 +156,7 @@ export class Mover {
 		// Generate moves
 		for (let i = 0; i < 64; i++) {
 			if (this.board.tiles[i].isColor(color)) {
-				moves[i] = this.getLegalMoves(i, kingIndex);
+				moves[i] = this.__getLegalMoves__(i, kingIndex);
 				if (checkMate) {
 					checkMate = moves[i].length === 0;
 				}
@@ -196,7 +164,6 @@ export class Mover {
 			}
 			moves[i] = [];
 		}
-		log(-1, "");
 
 		return { moves, checkMate };
 	}
@@ -223,16 +190,13 @@ export class Mover {
 	 * @param {number} from - the square from which you want to get the legal moves
 	 * @returns An array of moves that are legal.
 	 */
-	getLegalMoves(from: number, kingIndex: number): Move[] {
-		log(1, "getting legal moves from ", from);
-		let moves = this.getLegalAndIllegalMoves(from);
+	__getLegalMoves__(from: number, kingIndex: number): Move[] {
+		let moves = this.__getLegalAndIllegalMoves__(from);
 
 		moves = moves.filter((move) => {
 			const isLegal = this.isLegal(move, kingIndex);
 			return isLegal;
 		});
-
-		log(-1, "");
 
 		return moves;
 	}
@@ -241,91 +205,75 @@ export class Mover {
 	 * @param {number} from - the tile number of the piece you want to move
 	 * @returns An array of moves.
 	 */
-	getLegalAndIllegalMoves(from: number): Move[] {
-		log(1, "getting all legal and non-legal moves from ", from);
-		let result: Move[] = [];
-		let piece = this.board.tiles[from];
+	__getLegalAndIllegalMoves__(from: number): Move[] {
+		const result: Move[] = [];
+		const piece = this.board.tiles[from];
 		// const white = Piece.isColor(piece.code, Color.white);
 		// RNBQKBNR
 		// ROOKS //
 
 		if (piece.getType() === Type.rook) {
-			log(1, "rook");
-			result.push(...this.alignAxisMove(from));
-			log(-1, "");
+			result.push(...this.__alignAxisMove__(from));
 		}
 		// KNIGHTS //
 		else if (piece.getType() == Type.knight) {
-			log(1, "knights");
-			result.push(...this.knightMove(from));
-			log(-1, "");
+			result.push(...this.__knightMove__(from));
 		}
 		// BISHOPS //
 		else if (piece.getType() == Type.bishop) {
-			log(1, "bishops");
-			result.push(...this.diagonalAxisMove(from));
-			log(-1, "");
+			result.push(...this.__diagonalAxisMove__(from));
 		}
 		// QUEEN //
 		else if (piece.getType() == Type.queen) {
-			log(1, "queen");
-			result.push(...this.alignAxisMove(from));
-			result.push(...this.diagonalAxisMove(from));
-			log(-1, "");
+			result.push(...this.__alignAxisMove__(from));
+			result.push(...this.__diagonalAxisMove__(from));
 		}
 		// KING //
 		else if (piece.getType() == Type.king) {
-			log(1, "king");
-			const kingMove = this.kingMove(from);
+			const kingMove = this.__kingMove__(from);
 			result.push(...kingMove);
-			log(-1, "");
 		}
 		// PAWNS //
 		else if (piece.getType() == Type.pawn) {
-			log(1, "pawns");
-			result.push(...this.pawnMove(from));
-			log(-1, "");
+			result.push(...this.__pawnMove__(from));
 		}
 
-		log(-1, "");
 		return result;
 	}
 
 	/**
-	 * The middleware of the move generation.
+	 * Insert to the move list if the move.to s type was included in the insertIf array
 	 * @param  - move - the move to be inserted
 	 * @returns - true if the move is in the {insertIf} array
 	 */
-	insertIf({
+	__insertIf__({
 		move,
 		moves,
-		insertIf = ["enemy", "none"],
+		insertIf = ['enemy', 'none'],
 	}: {
 		move: Move;
 		moves: Move[];
 		insertIf?: CellStatus[];
 	}): boolean {
-		log(1, "inserting move ", move, " if ", insertIf);
 		const piece = this.board.tiles[move.from.index];
 		const pieceTo = this.board.tiles[move.to.index];
 		const color = piece.getColor();
 		const colorTo = pieceTo.getColor();
-		log(-1, "");
 		if (Piece.invertColor(color) == colorTo) {
-			if (insertIf.indexOf("enemy") != NONE) {
+			if (insertIf.indexOf('enemy') != NONE) {
 				moves.push(move);
 				return true;
 			}
 			return false;
 		}
 		if (colorTo == Color.none) {
-			if (insertIf.indexOf("none") != NONE) {
+			if (insertIf.indexOf('none') != NONE) {
 				moves.push(move);
 				return true;
 			}
 			return false;
 		}
-		if (insertIf.indexOf("friend") != NONE) {
+		if (insertIf.indexOf('friend') != NONE) {
 			moves.push(move);
 			return true;
 		}
@@ -340,8 +288,6 @@ export class Mover {
 			move?: Move;
 		}
 	): Move {
-		log(1, "getting move from: ", fromIndex, " to: ", toIndex);
-		log(-1, "");
 		return {
 			from: {
 				index: fromIndex,
@@ -353,14 +299,14 @@ export class Mover {
 				type: this.board.tiles[toIndex].getType(),
 				color: this.board.tiles[toIndex].getColor(),
 			},
-			capture: !!options?.capture
+			capture: options?.capture
 				? {
 						index: options?.capture,
 						type: this.board.tiles[options?.capture].getType(),
 						color: this.board.tiles[options?.capture].getColor(),
 				  }
 				: undefined,
-			move: !!options?.move ? options.move : undefined,
+			move: options?.move ? options.move : undefined,
 		};
 	}
 
@@ -369,9 +315,7 @@ export class Mover {
 	 * @param {number} from - The index of the piece that is moving.
 	 * @returns Available moves for the pawn (indexes of the squares)
 	 */
-	pawnMove(from: number): Move[] {
-		log(1, "pawnColor:", this.board.tiles[from].getColor());
-
+	__pawnMove__(from: number): Move[] {
 		const result: Move[] = [];
 		/* Up if the pawn is white */
 		const offset = this.board.tiles[from].getColor() == Color.white ? UP : DOWN;
@@ -382,18 +326,18 @@ export class Mover {
 
 		/* Insert move forward if the square is empty */
 		if (
-			this.insertIf({
+			this.__insertIf__({
 				move: this.getMove(from, index),
 				moves: result,
-				insertIf: ["none"],
+				insertIf: ['none'],
 			})
 		) {
 			/* If the pawn never moved, it can move two squares */
 			if (y === (offset == DOWN ? 1 : 6)) {
-				this.insertIf({
+				this.__insertIf__({
 					move: this.getMove(from, index + offset),
 					moves: result,
-					insertIf: ["none"],
+					insertIf: ['none'],
 				});
 			}
 		}
@@ -401,10 +345,10 @@ export class Mover {
 		/* Checking if the index is not on the left side of the board. */
 		if (index % 8 != 0) {
 			/* Pawn can capture diagonally to the left.*/
-			this.insertIf({
+			this.__insertIf__({
 				move: this.getMove(from, index - 1),
 				moves: result,
-				insertIf: ["enemy"],
+				insertIf: ['enemy'],
 			});
 
 			// enpassant
@@ -415,11 +359,9 @@ export class Mover {
 				lastMove.to.index === from - 1 &&
 				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
 			) {
-				log(1, "enpassant");
 				result.push(
 					this.getMove(from, from + offset - 1, { capture: from - 1 })
 				);
-				log(-1, "");
 			}
 		}
 
@@ -429,10 +371,10 @@ export class Mover {
         */
 		if ((index - 7) % 8 != 0) {
 			/* Pawn can capture diagonally to the right.*/
-			this.insertIf({
+			this.__insertIf__({
 				move: this.getMove(from, index + 1),
 				moves: result,
-				insertIf: ["enemy"],
+				insertIf: ['enemy'],
 			});
 
 			// enpassant
@@ -443,15 +385,11 @@ export class Mover {
 				lastMove.to.index === from + 1 &&
 				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
 			) {
-				log(1, "enpassant");
-
 				result.push(
 					this.getMove(from, from + offset + 1, { capture: from + 1 })
 				);
-				log(-1, "");
 			}
 		}
-		log(-1, "");
 		return result;
 	}
 
@@ -460,17 +398,16 @@ export class Mover {
 	 * @returns - true if the piece was attacked
 	 */
 	isAttacked(index: number): boolean {
-		log(1, "isAttacked: ", index);
 		/* Checking if the piece type is not none. */
 		if (this.board.tiles[index].getType() == 0) return false;
 		/* Enemy's color */
 		const color = Piece.invertColor(this.board.tiles[index].getColor());
 
 		const moveFuncs = [
-			this.alignAxisMove,
-			this.diagonalAxisMove,
-			this.kingMove,
-			this.knightMove,
+			this.__alignAxisMove__,
+			this.__diagonalAxisMove__,
+			this.__kingMove__,
+			this.__knightMove__,
 		];
 		const movePieces = [
 			[Type.rook | color, Type.queen | color],
@@ -479,15 +416,14 @@ export class Mover {
 			[Type.knight | color],
 		];
 
-		for (let idx in moveFuncs) {
+		for (const idx in moveFuncs) {
 			const moves = moveFuncs[idx](index, this);
-			const attacked = !!moves.find((move) => {
-				return !!movePieces[idx].find((code) => {
+			const attacked = moves.find((move) => {
+				return movePieces[idx].find((code) => {
 					return code == (move.to.color | move.to.type);
 				});
 			});
 			if (attacked) {
-				log(-1, true);
 				return true;
 			}
 		}
@@ -497,18 +433,15 @@ export class Mover {
 		if (index % 8 != 0) {
 			const piece = this.board.tiles[index + offset - 1];
 			if (piece.code === (color | Type.pawn)) {
-				log(-1, true);
 				return true;
 			}
 		}
 		if ((index - 7) % 8 != 0) {
 			const piece = this.board.tiles[index + offset + 1];
 			if (piece.code === (color | Type.pawn)) {
-				log(-1, true);
 				return true;
 			}
 		}
-		log(-1, false);
 		return false;
 	}
 
@@ -516,7 +449,7 @@ export class Mover {
 	 * @param from - The index of the piece you want to move
 	 * @returns Available moves of the knight (indexes of the squares)
 	 */
-	knightMove(from: number, obj = this): Move[] {
+	__knightMove__(from: number, obj = this): Move[] {
 		const result: Move[] = [];
 		const { x, y } = getCoords(from);
 		const range = [
@@ -526,8 +459,8 @@ export class Mover {
 
 		/* Checking all the possible moves for the knight. */
 		for (let i = 0; i < 2; i++) {
-			for (let xOffset of range[i]) {
-				for (let yOffset of range[1 - i]) {
+			for (const xOffset of range[i]) {
+				for (const yOffset of range[1 - i]) {
 					if (
 						x + xOffset < 0 ||
 						x + xOffset > 7 ||
@@ -535,8 +468,8 @@ export class Mover {
 						y + yOffset > 7
 					)
 						continue;
-					let index = getIndex(x + xOffset, y + yOffset);
-					obj.insertIf({
+					const index = getIndex(x + xOffset, y + yOffset);
+					obj.__insertIf__({
 						move: obj.getMove(from, index),
 						moves: result,
 					});
@@ -557,7 +490,7 @@ export class Mover {
 	 * @param {number} from - the index of the piece you want to move
 	 * @returns Available moves of the king (indexes of the squares)
 	 */
-	kingMove(from: number, obj = this): Move[] {
+	__kingMove__(from: number, obj = this): Move[] {
 		const result: Move[] = [];
 		const range = [
 			[-1, 1],
@@ -577,7 +510,7 @@ export class Mover {
 			const yFinal = y + yOffset;
 			if (xFinal < 0 || xFinal > 7 || yFinal < 0 || yFinal > 7) continue;
 			const index = getIndex(xFinal, yFinal);
-			obj.insertIf({ move: obj.getMove(from, index), moves: result });
+			obj.__insertIf__({ move: obj.getMove(from, index), moves: result });
 		}
 
 		const color = obj.board.tiles[from].getColor();
@@ -588,7 +521,7 @@ export class Mover {
 		const currentKingIndex = obj.getKingIndex(color);
 
 		// castle
-		if (kingIndex !== from || !!obj.board.tiles[kingIndex].moved) return result;
+		if (kingIndex !== from || obj.board.tiles[kingIndex].moved) return result;
 
 		if (obj.checkIndex[color] !== NONE) return result;
 		// left
@@ -639,7 +572,7 @@ export class Mover {
 	 * @param {number} from - The index of the piece you want to move.
 	 * @returns An array of moves.
 	 */
-	alignAxisMove(from: number, obj = this): Move[] {
+	__alignAxisMove__(from: number, obj = this): Move[] {
 		const piece = obj.board.tiles[from];
 		const colorToMove = piece.getColor();
 		const moves: Move[] = [];
@@ -665,7 +598,7 @@ export class Mover {
 	 * @param {number} from - the index of the piece you want to move
 	 * @returns An array of moves.
 	 */
-	diagonalAxisMove(from: number, obj = this): Move[] {
+	__diagonalAxisMove__(from: number, obj = this): Move[] {
 		const piece = obj.board.tiles[from];
 		const colorToMove = piece.getColor();
 		const moves: Move[] = [];

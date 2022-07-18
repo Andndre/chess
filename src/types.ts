@@ -1,9 +1,4 @@
-import { Color, Type } from "./piece.js";
-
-export type Size = {
-	width: number;
-	height: number;
-};
+import { Color, Type } from './piece.ts';
 
 export type TileInfo = {
 	index: number;
@@ -19,7 +14,7 @@ export type Move = {
 	check?: number;
 };
 
-export type CellStatus = "enemy" | "none" | "friend";
+export type CellStatus = 'enemy' | 'none' | 'friend';
 
 export type Vector = {
 	x: number;

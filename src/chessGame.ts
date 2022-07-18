@@ -8,12 +8,12 @@ export class ChessGame {
 	gameOver = false;
 	fiftyMoveRule: boolean;
 	gameOverReason: GameOverReason = 'not true';
-	onMove?: CallBackFunction;
-	onUndo?: CallBackFunction;
-	onCapture?: CallBackFunction;
-	onPromote?: CallBackFunction;
-	onCastle?: CallBackFunction;
-	onGameOver?: CallBackFunction;
+	onMove: CallBackFunction[] = [];
+	onUndo: CallBackFunction[] = [];
+	onCapture: CallBackFunction[] = [];
+	onPromote: CallBackFunction[] = [];
+	onCastle: CallBackFunction[] = [];
+	onGameOver: CallBackFunction[] = [];
 	private constructor(fen: string, fiftyMoveRuleEnabled = true) {
 		this.board = Board.fromFEN(fen);
 		this.mover = new Mover(this.board, this);
@@ -31,22 +31,22 @@ export class ChessGame {
 	on(ev: ChessEvent, callBack: CallBackFunction) {
 		switch (ev) {
 			case 'move':
-				this.onMove = callBack;
+				this.onMove.push(callBack);
 				return;
 			case 'capture':
-				this.onCapture = callBack;
+				this.onCapture.push(callBack);
 				return;
 			case 'promote':
-				this.onPromote = callBack;
+				this.onPromote.push(callBack);
 				return;
 			case 'undo':
-				this.onUndo = callBack;
+				this.onUndo.push(callBack);
 				return;
 			case 'castle':
-				this.onCastle = callBack;
+				this.onCastle.push(callBack);
 				return;
 			case 'gameOver':
-				this.onGameOver = callBack;
+				this.onGameOver.push(callBack);
 		}
 	}
 }

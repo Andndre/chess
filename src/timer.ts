@@ -3,18 +3,20 @@ import { CallBackFunction } from './types.ts';
 
 export class BasicTimer {
 	seconds: number;
-	paused = false;
+	paused = true;
+	stopped = false;
 	onTimeIsUp: CallBackFunction;
 	constructor(seconds: number, onTimeIsUp: CallBackFunction) {
 		this.seconds = seconds;
 		this.onTimeIsUp = onTimeIsUp;
 	}
 	start() {
+		if (this.stopped) return;
 		if (!this.paused) return;
 		this.paused = false;
 		return new Promise<void>((resolve) => {
 			const interval = setInterval(() => {
-				if (this.paused || this.seconds === 0) {
+				if (this.paused || this.seconds === 0 || this.stopped) {
 					resolve();
 					clearInterval(interval);
 					if (this.seconds === 0) {
@@ -29,6 +31,10 @@ export class BasicTimer {
 
 	pause() {
 		this.paused = true;
+	}
+
+	stop() {
+		this.stopped = true;
 	}
 }
 
@@ -50,17 +56,25 @@ export class ChessTimer {
 			white: new BasicTimer(seconds, () => {
 				chessGame.gameOver = true;
 				chessGame.gameOverReason = 'draw';
-				chessGame.onGameOver && chessGame.onGameOver();
+				for (const cb of this.chessGame.onGameOver) {
+					cb();
+				}
 				onTimeIsUp && onTimeIsUp();
 			}),
 			black: new BasicTimer(seconds, () => {
 				chessGame.gameOver = true;
 				chessGame.gameOverReason = 'draw';
-				chessGame.onGameOver && chessGame.onGameOver();
+				for (const cb of this.chessGame.onGameOver) {
+					cb();
+				}
 				onTimeIsUp && onTimeIsUp();
 			}),
 		};
 		this.chessGame = chessGame;
+		chessGame.on('gameOver', () => {
+			this.timers.black.stop();
+			this.timers.white.stop();
+		});
 		chessGame.on('move', () => {
 			let startCount = 0;
 			if (this.timers.black.paused) {

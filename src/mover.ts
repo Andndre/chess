@@ -80,7 +80,9 @@ export class Mover {
 			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 101) {
 				this.chessGame.gameOver = true;
 				this.chessGame.gameOverReason = 'draw';
-				this.chessGame.onGameOver && this.chessGame.onGameOver();
+				for (const cb of this.chessGame.onGameOver) {
+					cb();
+				}
 			}
 			if (from.isType(Type.rook)) {
 				if (from.isColor(Color.white)) {
@@ -144,15 +146,18 @@ export class Mover {
 
 		// run CallBack
 		if (!justATest) {
-			const cbMove = this.chessGame.onMove;
-			cbMove && cbMove();
+			for (const cb of this.chessGame.onMove) {
+				cb();
+			}
 			if (castle) {
-				const cbCastle = this.chessGame.onCastle;
-				cbCastle && cbCastle();
+				for (const cb of this.chessGame.onCastle) {
+					cb();
+				}
 			}
 			if (promote) {
-				const cbPromote = this.chessGame.onMove;
-				cbPromote && cbPromote();
+				for (const cb of this.chessGame.onPromote) {
+					cb();
+				}
 			}
 		}
 	}
@@ -165,8 +170,9 @@ export class Mover {
 		if (!move) return;
 
 		if (!justATest) {
-			const cb = this.chessGame.onUndo;
-			cb && cb();
+			for (const cb of this.chessGame.onUndo) {
+				cb();
+			}
 			this.chessGame.gameOver = false;
 			this.chessGame.gameOverReason = 'not true';
 		}
@@ -215,13 +221,17 @@ export class Mover {
 	 * Fills the legal moves array with the legal moves for the current player
 	 */
 	generateNextMove() {
+		// may be redundant
+		if (this.chessGame.gameOver) return;
 		this.allMoves.splice(0, this.allMoves.length);
 		const { moves, checkMate } = this.__generateMoves__(this.current);
 		this.checkMate = checkMate;
 		if (checkMate) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'checkMate';
-			this.chessGame.onGameOver && this.chessGame.onGameOver();
+			for (const cb of this.chessGame.onGameOver) {
+				cb();
+			}
 		}
 		this.allMoves.push(...moves);
 	}

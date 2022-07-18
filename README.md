@@ -1,5 +1,7 @@
 # Chess-Deno
 
+**⚠️ Still under development**
+
 A minimal Chess Engine fully written in typescript.
 
 This library includes:

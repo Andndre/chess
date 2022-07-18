@@ -171,7 +171,7 @@ export class Mover {
 	 * @param {Move} move - Move - The move to check
 	 * @returns A boolean value.
 	 */
-	isLegal(move: Move, kingIndex: number) {
+	__isLegal__(move: Move, kingIndex: number) {
 		if (move.to.color === move.from.color) {
 			return false;
 		}
@@ -194,7 +194,7 @@ export class Mover {
 		let moves = this.__getLegalAndIllegalMoves__(from);
 
 		moves = moves.filter((move) => {
-			const isLegal = this.isLegal(move, kingIndex);
+			const isLegal = this.__isLegal__(move, kingIndex);
 			return isLegal;
 		});
 
@@ -529,7 +529,10 @@ export class Mover {
 			let allowedToCastle = true;
 			for (let i = 1; i < 4; i++) {
 				if (
-					!obj.isLegal(obj.getMove(kingIndex, kingIndex - i), currentKingIndex)
+					!obj.__isLegal__(
+						obj.getMove(kingIndex, kingIndex - i),
+						currentKingIndex
+					)
 				) {
 					allowedToCastle = false;
 					break;
@@ -549,7 +552,10 @@ export class Mover {
 			let allowedToCastle = true;
 			for (let i = 1; i < 3; i++) {
 				if (
-					!obj.isLegal(obj.getMove(kingIndex, kingIndex + i), currentKingIndex)
+					!obj.__isLegal__(
+						obj.getMove(kingIndex, kingIndex + i),
+						currentKingIndex
+					)
 				) {
 					allowedToCastle = false;
 					break;

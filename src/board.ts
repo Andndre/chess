@@ -1,7 +1,8 @@
 import { Color, Piece, Type } from './piece.ts';
-import { isUpperCase } from './utils.ts';
+import { isUpperCase, lastElementInAnArray } from './utils.ts';
 import { getIndex } from './coordinates.ts';
-import { NONE } from './constants.ts';
+import { DOWN, NONE } from './constants.ts';
+import { Mover } from './mover.ts';
 
 export class Board {
 	tiles: Piece[] = [];
@@ -91,6 +92,55 @@ export class Board {
 				index++;
 			}
 		}
+	}
+
+	getFenString(thisMover: Mover) {
+		let result = '';
+		for (let file = 0; file < 8; file++) {
+			let empty = 0;
+			for (let rank = 0; rank < 8; rank++) {
+				const index = getIndex(rank, file);
+				if (this.tiles[index].code === Type.none) {
+					empty++;
+					continue;
+				}
+				if (empty) {
+					result += empty;
+				}
+				result += this.tiles[index].toString();
+			}
+			if (empty) {
+				result += empty;
+			}
+			if (file !== 7) result += '/';
+		}
+		result += ' ';
+		const beforeCastle = result.length;
+		if (this.K) result += 'K';
+		if (this.Q) result += 'Q';
+		if (this.k) result += 'k';
+		if (this.q) result += 'q';
+		if (!(result.length - beforeCastle)) result += '-';
+		result += ' ';
+		const lastMove = lastElementInAnArray(thisMover.history);
+		if (
+			lastMove &&
+			lastMove.from.type === Type.pawn &&
+			Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
+		) {
+			const mid = (lastMove.from.index + lastMove.to.index) / 2;
+			const y = 8 - Math.floor(mid / 8);
+			const x = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][mid % 8];
+			result += x + y;
+		} else {
+			result += '-';
+		}
+		result += ' ';
+		result += thisMover.history.length;
+		result += ' ';
+		result += Math.floor(thisMover.history.length / 2) + 1;
+
+		return result;
 	}
 
 	/**

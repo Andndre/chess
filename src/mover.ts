@@ -1,5 +1,5 @@
 import { Board } from './board.ts';
-import { directionOffsets, DOWN, NONE, UP } from './constants.ts';
+import { directionOffsets, DOWN, LEFT, NONE, UP } from './constants.ts';
 import { getCoords, getIndex } from './coordinates.ts';
 import { Color, Piece, Type } from './piece.ts';
 import { CellStatus, Move } from './types.ts';
@@ -75,10 +75,27 @@ export class Mover {
 
 		from.moved++;
 
+		if (from.isType(Type.king)) {
+			if (from.isColor(Color.white)) {
+				if (to.index - from.index === LEFT * 2) {
+					this.board.Q = false;
+				} else {
+					this.board.K = false;
+				}
+			} else {
+				if (to.index - from.index === LEFT * 2) {
+					this.board.q = false;
+				} else {
+					this.board.k = false;
+				}
+			}
+		}
+
 		if (move.capture) {
 			this.board.tiles[move.capture.index].code = Type.none;
 		}
 
+		// castle
 		if (move.move) {
 			const from_ = this.board.tiles[move.move.from.index];
 			from_.moved++;
@@ -116,6 +133,24 @@ export class Mover {
 		const to = this.board.tiles[move.to.index];
 
 		from.moved--;
+
+		if (!from.moved) {
+			if (from.isType(Type.king)) {
+				if (from.isColor(Color.white)) {
+					if (to.index - from.index === LEFT * 2) {
+						this.board.Q = true;
+					} else {
+						this.board.K = true;
+					}
+				} else {
+					if (to.index - from.index === LEFT * 2) {
+						this.board.q = true;
+					} else {
+						this.board.k = true;
+					}
+				}
+			}
+		}
 
 		if (move.capture) {
 			this.board.tiles[move.capture.index].code =
@@ -525,7 +560,7 @@ export class Mover {
 		if (kingIndex !== from || obj.board.tiles[kingIndex].moved) return result;
 
 		if (obj.checkIndex[color] !== NONE) return result;
-		// left
+		// Queen's side
 		if (!obj.board.tiles[kingIndex - 4].moved) {
 			let allowedToCastle = true;
 			for (let i = 1; i < 4; i++) {
@@ -548,7 +583,7 @@ export class Mover {
 			}
 		}
 
-		// right
+		// King's side
 		if (!obj.board.tiles[kingIndex + 3].moved) {
 			let allowedToCastle = true;
 			for (let i = 1; i < 3; i++) {
@@ -592,7 +627,6 @@ export class Mover {
 				const color = obj.board.tiles[current].getColor();
 				if (color == Color.none || color == Piece.invertColor(colorToMove))
 					moves.push(obj.getMove(from, current));
-
 				if (color == colorToMove || color == Piece.invertColor(colorToMove))
 					break;
 			}

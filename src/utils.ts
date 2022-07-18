@@ -25,3 +25,7 @@ export function repeat(string: string, multiplier: number) {
 export function randomFromArray<T>(array: T[]) {
 	return array[Math.floor(Math.random() * array.length)];
 }
+
+export function lastElementInAnArray<T>(array: T[]) {
+	return array[array.length - 1];
+}

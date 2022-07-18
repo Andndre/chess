@@ -162,7 +162,7 @@ export class Mover {
 		const to = this.board.tiles[move.to.index];
 
 		this.chessGame.gameOver = false;
-		this.chessGame.gameOverReason = 'none';
+		this.chessGame.gameOverReason = 'not true';
 
 		from.moved--;
 

@@ -41,17 +41,23 @@ export class ChessTimer {
 	timers: ChessTimersStruct;
 	chessGame: ChessGame;
 
-	constructor(seconds: number, chessGame: ChessGame) {
+	constructor(
+		seconds: number,
+		chessGame: ChessGame,
+		onTimeIsUp?: CallBackFunction
+	) {
 		this.timers = {
 			white: new BasicTimer(seconds, () => {
 				chessGame.gameOver = true;
 				chessGame.gameOverReason = 'draw';
 				chessGame.onGameOver && chessGame.onGameOver();
+				onTimeIsUp && onTimeIsUp();
 			}),
 			black: new BasicTimer(seconds, () => {
 				chessGame.gameOver = true;
 				chessGame.gameOverReason = 'draw';
 				chessGame.onGameOver && chessGame.onGameOver();
+				onTimeIsUp && onTimeIsUp();
 			}),
 		};
 		this.chessGame = chessGame;

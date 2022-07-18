@@ -7,7 +7,7 @@ export class ChessGame {
 	mover: Mover;
 	gameOver = false;
 	fiftyMoveRule: boolean;
-	gameOverReason: GameOverReason = 'none';
+	gameOverReason: GameOverReason = 'not true';
 	onMove?: CallBackFunction;
 	onUndo?: CallBackFunction;
 	onCapture?: CallBackFunction;

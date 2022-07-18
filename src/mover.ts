@@ -4,6 +4,7 @@ import { directionOffsets, DOWN, LEFT, NONE, UP } from './constants.ts';
 import { getCoords, getIndex } from './coordinates.ts';
 import { Color, Piece, Type } from './piece.ts';
 import { CellStatus, Move } from './types.ts';
+import { lastElementInAnArray } from './utils.ts';
 
 type CheckIndex = {
 	16: number;
@@ -428,7 +429,7 @@ export class Mover {
 			});
 
 			// enpassant
-			const lastMove = this.history[this.history.length - 1];
+			const lastMove = lastElementInAnArray(this.history);
 			if (
 				lastMove &&
 				lastMove.from.type === Type.pawn &&
@@ -454,7 +455,7 @@ export class Mover {
 			});
 
 			// enpassant
-			const lastMove = this.history[this.history.length - 1];
+			const lastMove = lastElementInAnArray(this.history);
 			if (
 				lastMove &&
 				lastMove.from.type === Type.pawn &&

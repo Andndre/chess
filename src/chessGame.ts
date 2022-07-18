@@ -4,9 +4,13 @@ import { Mover } from './mover.ts';
 export class ChessGame {
 	board: Board;
 	mover: Mover;
-	private constructor(fen: string) {
+	gameOver = false;
+	fiftyMoveRule: boolean;
+	gameOverReason: 'none' | 'checkMate' | 'draw' = 'none';
+	private constructor(fen: string, fiftyMoveRuleEnabled = true) {
 		this.board = Board.fromFEN(fen);
-		this.mover = new Mover(this.board);
+		this.mover = new Mover(this.board, this);
+		this.fiftyMoveRule = fiftyMoveRuleEnabled;
 	}
 
 	static newStandardGame() {

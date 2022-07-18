@@ -136,9 +136,9 @@ export class Board {
 			result += '-';
 		}
 		result += ' ';
-		result += thisMover.history.length;
+		result += thisMover.halfMoveClock();
 		result += ' ';
-		result += Math.floor(thisMover.history.length / 2) + 1;
+		result += thisMover.fullMoveNumber();
 
 		return result;
 	}

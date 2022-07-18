@@ -1,4 +1,5 @@
 import { Board } from './board.ts';
+import { ChessGame } from './chessGame.ts';
 import { directionOffsets, DOWN, LEFT, NONE, UP } from './constants.ts';
 import { getCoords, getIndex } from './coordinates.ts';
 import { Color, Piece, Type } from './piece.ts';
@@ -23,13 +24,14 @@ export class Mover {
 	 */
 	allMoves: Move[][] = [];
 	checkMate = false;
-	constructor(board: Board) {
+	chessGame: ChessGame;
+	constructor(board: Board, chessGame: ChessGame) {
+		this.chessGame = chessGame;
 		this.board = board;
 		this.generateNextMove();
 	}
 	selectTile(index: number) {
 		const isFriendly = this.board.tiles[index].isColor(this.current);
-
 		if (isFriendly) {
 			this.selectedIndex = index;
 		} else if (
@@ -72,6 +74,11 @@ export class Mover {
 	move(move: Move) {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
+
+		if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 101) {
+			this.chessGame.gameOver = true;
+			this.chessGame.gameOverReason = 'draw';
+		}
 
 		from.moved++;
 
@@ -132,6 +139,9 @@ export class Mover {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
 
+		this.chessGame.gameOver = false;
+		this.chessGame.gameOverReason = 'none';
+
 		from.moved--;
 
 		if (!from.moved) {
@@ -176,6 +186,10 @@ export class Mover {
 		this.allMoves.splice(0, this.allMoves.length);
 		const { moves, checkMate } = this.__generateMoves__(this.current);
 		this.checkMate = checkMate;
+		if (checkMate) {
+			this.chessGame.gameOver = true;
+			this.chessGame.gameOverReason = 'checkMate';
+		}
 		this.allMoves.push(...moves);
 	}
 
@@ -659,5 +673,13 @@ export class Mover {
 			}
 		}
 		return moves;
+	}
+
+	halfMoveClock() {
+		return this.history.length;
+	}
+
+	fullMoveNumber() {
+		return Math.floor(this.history.length / 2) + 1;
 	}
 }

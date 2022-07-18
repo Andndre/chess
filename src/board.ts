@@ -115,6 +115,8 @@ export class Board {
 			if (file !== 7) result += '/';
 		}
 		result += ' ';
+		result += thisMover.current === Color.white ? 'w' : 'b';
+		result += ' ';
 		const beforeCastle = result.length;
 		if (this.K) result += 'K';
 		if (this.Q) result += 'Q';

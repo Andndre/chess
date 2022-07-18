@@ -106,11 +106,13 @@ export class Board {
 				}
 				if (empty) {
 					result += empty;
+					empty = 0;
 				}
 				result += this.tiles[index].toString();
 			}
 			if (empty) {
 				result += empty;
+				empty = 0;
 			}
 			if (file !== 7) result += '/';
 		}

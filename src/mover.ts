@@ -77,7 +77,7 @@ export class Mover {
 		const to = this.board.tiles[move.to.index];
 
 		if (!justATest) {
-			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 101) {
+			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() + 1 === 100) {
 				this.chessGame.gameOver = true;
 				this.chessGame.gameOverReason = 'draw';
 				for (const cb of this.chessGame.onGameOver) {

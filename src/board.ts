@@ -146,9 +146,4 @@ export class Board {
 
 		return result;
 	}
-
-	/**
-	 
-	 */
-	toString() {}
 }

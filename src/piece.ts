@@ -1,17 +1,17 @@
 export enum Type {
-	none = 0, // ...0
-	king = 1, // ...1
-	queen = 2, // ...10
-	knight = 3, // ...11
-	bishop = 4, // ...100
-	pawn = 5, // ...101
-	rook = 6, // ...110
+	none = 0b00000, // ...0
+	king = 0b00001, // ...1
+	queen = 0b00010, // ...10
+	knight = 0b00011, // ...11
+	bishop = 0b00100, // ...100
+	pawn = 0b00101, // ...101
+	rook = 0b00110, // ...110
 }
 
 export enum Color {
-	white = 16,
-	black = 8,
-	none = 0,
+	white = 0b10000,
+	black = 0b01000,
+	none = 0b00000,
 }
 
 /* 
@@ -64,7 +64,7 @@ export class Piece {
 	 * @returns The piece type.
 	 */
 	static getType(piece: number) {
-		return piece & 7;
+		return piece & 0b00111;
 	}
 
 	/**
@@ -72,7 +72,7 @@ export class Piece {
 	 * @returns The data property is being returned.
 	 */
 	getType() {
-		return this.code & 7;
+		return this.code & 0b00111;
 	}
 
 	/**
@@ -81,7 +81,7 @@ export class Piece {
 	 * @returns The color of the piece.
 	 */
 	static getColor(code: number) {
-		return code & 24;
+		return code & 0b11000;
 	}
 
 	/**
@@ -89,7 +89,7 @@ export class Piece {
 	 * @returns The color of the piece.
 	 */
 	getColor(): Color {
-		return this.code & 24;
+		return this.code & 0b11000;
 	}
 
 	/**

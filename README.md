@@ -12,9 +12,12 @@ This library includes:
 
 Example: **Random Move**
 ```ts
-import { ChessGame, AI } from './mod.ts';
-import { ChessTimer } from './mod.ts';
-import { Utils } from './mod.ts';
+import {
+	ChessGame,
+	AI,
+	ChessTimer,
+	Utils,
+} from 'https://deno.land/x/chess_typescript@v0.1.0/mod.ts';
 
 const chessGame = ChessGame.newStandardGame();
 const mover = chessGame.mover;

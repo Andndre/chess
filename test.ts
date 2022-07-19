@@ -3,7 +3,7 @@ import {
 	AI,
 	ChessTimer,
 	Utils,
-} from 'https://deno.land/x/chess_typescript@v0.1.0/mod.ts';
+} from 'https://deno.land/x/chess_typescript/mod.ts';
 
 const chessGame = ChessGame.newStandardGame();
 const mover = chessGame.mover;

@@ -6,9 +6,15 @@ export class BasicTimer {
 	paused = true;
 	stopped = false;
 	onTimeIsUp: CallBackFunction;
-	constructor(seconds: number, onTimeIsUp: CallBackFunction) {
+	onTick: CallBackFunction;
+	constructor(
+		seconds: number,
+		onTimeIsUp: CallBackFunction,
+		onTick: CallBackFunction
+	) {
 		this.seconds = seconds;
 		this.onTimeIsUp = onTimeIsUp;
+		this.onTick = onTick;
 	}
 	start() {
 		if (this.stopped) return;
@@ -25,6 +31,7 @@ export class BasicTimer {
 					return;
 				}
 				this.seconds--;
+				this.onTick();
 			}, 1000);
 		});
 	}
@@ -50,25 +57,38 @@ export class ChessTimer {
 	constructor(
 		seconds: number,
 		chessGame: ChessGame,
-		onTimeIsUp?: CallBackFunction
+		onTimeIsUp?: CallBackFunction,
+		onTick?: CallBackFunction
 	) {
 		this.timers = {
-			white: new BasicTimer(seconds, () => {
-				chessGame.gameOver = true;
-				chessGame.gameOverReason = 'draw';
-				for (const cb of this.chessGame.onGameOver) {
-					cb();
+			white: new BasicTimer(
+				seconds,
+				() => {
+					chessGame.gameOver = true;
+					chessGame.gameOverReason = 'draw';
+					for (const cb of this.chessGame.onGameOver) {
+						cb();
+					}
+					onTimeIsUp && onTimeIsUp();
+				},
+				() => {
+					onTick && onTick();
 				}
-				onTimeIsUp && onTimeIsUp();
-			}),
-			black: new BasicTimer(seconds, () => {
-				chessGame.gameOver = true;
-				chessGame.gameOverReason = 'draw';
-				for (const cb of this.chessGame.onGameOver) {
-					cb();
+			),
+			black: new BasicTimer(
+				seconds,
+				() => {
+					chessGame.gameOver = true;
+					chessGame.gameOverReason = 'draw';
+					for (const cb of this.chessGame.onGameOver) {
+						cb();
+					}
+					onTimeIsUp && onTimeIsUp();
+				},
+				() => {
+					onTick && onTick();
 				}
-				onTimeIsUp && onTimeIsUp();
-			}),
+			),
 		};
 		this.chessGame = chessGame;
 		chessGame.on('gameOver', () => {

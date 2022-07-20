@@ -9,7 +9,7 @@ export class MonkeyAI {
 	constructor(chessGame: ChessGame) {
 		this.chessGame = chessGame;
 	}
-	takeTurn() {
+	getMove() {
 		const mover = this.chessGame.mover;
 		const avIndexes: number[] = [];
 		for (const tile of this.chessGame.mover.allMoves) {
@@ -17,8 +17,7 @@ export class MonkeyAI {
 			avIndexes.push(tile[0].from.index);
 		}
 		if (avIndexes) {
-			mover.move(randomFromArray(mover.allMoves[randomFromArray(avIndexes)]));
+			return randomFromArray(mover.allMoves[randomFromArray(avIndexes)]);
 		}
-		mover.generateNextMove();
 	}
 }

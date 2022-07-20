@@ -1,7 +1,11 @@
 import { Board } from './board.ts';
 import { ChessGame } from './chessGame.ts';
 import { directionOffsets, DOWN, LEFT, NONE, UP } from './constants.ts';
-import { getCoords, getIndex } from './coordinates.ts';
+import {
+	getCoords,
+	getIndex,
+	getIndexFromChessNotation,
+} from './coordinates.ts';
 import { Color, Piece, Type } from './piece.ts';
 import { CellStatus, Move } from './types.ts';
 import { lastElementInAnArray } from './utils.ts';
@@ -39,7 +43,7 @@ export class Mover {
 			this.selectedIndex != NONE &&
 			this.allMoves[this.selectedIndex].find((move) => move.to.index == index)
 		) {
-			this.move(
+			this.__move__(
 				this.allMoves[this.selectedIndex].find((move) => {
 					return move.to.index == index;
 				})!
@@ -65,6 +69,55 @@ export class Mover {
 		}
 	}
 
+	/**
+	 * **If the move is invalid, then nothing will happen**.
+	 *
+	 * So make sure that the move was in `this.allMoves`
+	 *
+	 * Only indexes are supported
+	 */
+	moveStrict(from: number, to: number) {
+		this.selectedIndex = -1;
+		this.selectTile(from);
+		this.selectTile(to);
+	}
+
+	/**
+	 * Example of using chess notation:
+	 * ```ts
+	 * // Move from `b1` to `d2`
+	 * moveStrictUsingChessNotation('b1d2')
+	 * // Pawn promotion
+	 * moveStrictUsingChessNotation('g7g8=Q')
+	 * // Castling King's side
+	 * moveStrictUsingChessNotation('0-0') // or 0-0-0 for queen's side
+	 * ```
+	 * If there is no ambiguity,
+	 * you **cannot** use shorthand notation such as `e4`,
+	 * or else it might will not work.
+	 *
+	 * Like moveStrict(), if the move is invalid, then nothing will happen
+	 */
+	moveStrictUsingChessNotation(move: string) {
+		if (move.indexOf('-') !== -1) {
+			const kingIndex = this.current === Color.white ? 60 : 4;
+			// king's side
+			const offset = move.split('-').length - 1 === 1 ? 2 : -2;
+			this.moveStrict(kingIndex, kingIndex + offset);
+			return;
+		}
+		const from = getIndexFromChessNotation(move.substring(0, 2));
+		const to = getIndexFromChessNotation(move.substring(2, 4));
+		if (move.indexOf('=') !== -1) {
+			this.moveStrict(from, to);
+			this.board.tiles[to].code =
+				Piece.getTypeFromChar(move.charAt(5))! |
+				this.board.tiles[to].getColor();
+		} else {
+			this.moveStrict(from, to);
+		}
+	}
+
 	isValid(move: Move) {
 		if (!this.allMoves[move.from.index]) return false;
 		return !!this.allMoves[move.from.index].find(
@@ -72,7 +125,7 @@ export class Mover {
 		);
 	}
 
-	move(move: Move, justATest = false) {
+	__move__(move: Move, justATest = false) {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
 
@@ -133,8 +186,6 @@ export class Mover {
 			from.isType(Type.pawn) &&
 			getCoords(move.to.index).y === (from.isColor(Color.white) ? 0 : 7)
 		) {
-			// TODO: dropdown menu
-			// await dropdown ?
 			promote = true;
 			to.code = Type.queen | from.getColor();
 		}
@@ -273,7 +324,7 @@ export class Mover {
 			kingIndex = move.to.index;
 		}
 
-		this.move(move, true);
+		this.__move__(move, true);
 		const isAttacked = this.isAttacked(kingIndex);
 		this.undoMove(true);
 		return !isAttacked;

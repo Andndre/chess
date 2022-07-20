@@ -23,3 +23,12 @@ export function getCoords(index: number): Vector {
 export function getIndex(x: number, y: number): number {
 	return y * 8 + x;
 }
+
+/**
+ * convert `a8` to 0, `b8` to 1, etc
+ */
+export function getIndexFromChessNotation(notation: string) {
+	const x = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+	const y = ['8', '7', '6', '5', '4', '3', '2', '1'];
+	return getIndex(x.indexOf(notation.charAt(0)), y.indexOf(notation.charAt(1)));
+}

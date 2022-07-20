@@ -29,6 +29,7 @@ export class Mover {
 	 */
 	allMoves: Move[][] = [];
 	checkMate = false;
+	staleMate = false;
 	chessGame: ChessGame;
 	constructor(board: Board, chessGame: ChessGame) {
 		this.chessGame = chessGame;
@@ -275,11 +276,20 @@ export class Mover {
 		// may be redundant
 		if (this.chessGame.gameOver) return;
 		this.allMoves.splice(0, this.allMoves.length);
-		const { moves, checkMate } = this.__generateMoves__(this.current);
+		const { moves, checkMate, staleMate } = this.__generateMoves__(
+			this.current
+		);
 		this.checkMate = checkMate;
+		this.staleMate = staleMate;
 		if (checkMate) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'checkMate';
+			for (const cb of this.chessGame.onGameOver) {
+				cb();
+			}
+		} else if (staleMate) {
+			this.chessGame.gameOver = true;
+			this.chessGame.gameOverReason = 'staleMate';
 			for (const cb of this.chessGame.onGameOver) {
 				cb();
 			}
@@ -296,6 +306,7 @@ export class Mover {
 		const kingIndex = this.getKingIndex(color);
 
 		let checkMate = true;
+		let staleMate = false;
 
 		// Generate moves
 		for (let i = 0; i < 64; i++) {
@@ -309,7 +320,12 @@ export class Mover {
 			moves[i] = [];
 		}
 
-		return { moves, checkMate };
+		if (checkMate && !this.isAttacked(kingIndex)) {
+			staleMate = true;
+			checkMate = false;
+		}
+
+		return { moves, checkMate, staleMate };
 	}
 	/**
 	 * @param {Move} move - Move - The move to check

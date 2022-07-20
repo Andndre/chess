@@ -28,5 +28,5 @@ export type ChessEvent =
 	| 'promote'
 	| 'castle'
 	| 'gameOver';
-export type GameOverReason = 'not true' | 'checkMate' | 'draw';
+export type GameOverReason = 'not true' | 'checkMate' | 'draw' | 'staleMate';
 export type CallBackFunction = () => void;

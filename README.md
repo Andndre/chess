@@ -33,21 +33,42 @@ const main = async () => {
 	const easyAI = new AI.EasyAI(chessGame);
 	const monkeyAI = new AI.MonkeyAI(chessGame);
 
+	chessGame.onBlackPromote = () => {
+		const lastMove = chessGame.mover.getLastMove();
+		// pieceType | color
+		chessGame.board.tiles[lastMove.to.index].code =
+			Utils.randomFromArray([Type.bishop, Type.queen, Type.knight, Type.rook]) |
+			lastMove.from.color;
+		// if we didn't set the piece type on promote, the piece will turn into a queen
+	};
+
+
 	console.log(chessGame.board.toString());
+	/**
+		♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+		♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+
+
+
+
+		♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+		♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ 
+	 */
 
 	let mv = 0;
 
 	while (!chessGame.gameOver) {
+		console.clear();
+		// easyAI as white, and monkeyAI as black
 		const move = mv++ % 2 == 0 ? easyAI.getMove() : monkeyAI.getMove();
-
 		if (move) {
 			chessGame.mover.moveStrict(move.from, move.to);
+			// NEEDED
+			chessGame.mover.next();
 		}
-
-		console.clear();
 		console.log(move);
 		console.log(chessGame.board.toString());
-		// await Utils.sleep(2000);
+		await Utils.sleep(500);
 	}
 
 	console.log(chessGame.gameOverReason + '!');

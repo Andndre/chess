@@ -21,6 +21,14 @@ white king => 16 | 1 = 0b10000 | 0b00001 = 0b10001 = 17
 
 export class Piece {
 	index: number;
+	/**
+	 * `Color | Type`
+	 *
+	 * example:
+	 * ```ts
+	 * Color.white | Type.king // white king
+	 * ```
+	 */
 	code: number;
 	moved = 0;
 
@@ -152,9 +160,29 @@ export class Piece {
 			default:
 				return ' ';
 		}
-		if (this.getColor() == Color.white) {
+		if (this.getColor() === Color.white) {
 			return char.toUpperCase();
 		}
 		return char;
+	}
+
+	getChessSymbol() {
+		const white = this.isColor(Color.white);
+		switch (this.getType()) {
+			case Type.bishop:
+				return white ? '♗' : '♝';
+			case Type.king:
+				return white ? '♔' : '♚';
+			case Type.knight:
+				return white ? '♘' : '♞';
+			case Type.pawn:
+				return white ? '♙' : '♟';
+			case Type.queen:
+				return white ? '♕' : '♛';
+			case Type.rook:
+				return white ? '♖' : '♜';
+			default:
+				return ' ';
+		}
 	}
 }

@@ -36,6 +36,9 @@ export class Mover {
 		this.board = board;
 		this.generateNextMove();
 	}
+	getLastMove() {
+		return lastElementInAnArray(this.history);
+	}
 	selectTile(index: number) {
 		const isFriendly = this.board.tiles[index].isColor(this.current);
 		if (isFriendly) {
@@ -44,11 +47,10 @@ export class Mover {
 			this.selectedIndex != NONE &&
 			this.allMoves[this.selectedIndex].find((move) => move.to.index == index)
 		) {
-			this.__move__(
-				this.allMoves[this.selectedIndex].find((move) => {
-					return move.to.index == index;
-				})!
-			);
+			const move = this.allMoves[this.selectedIndex].find((move) => {
+				return move.to.index == index;
+			})!;
+			this.__move__(move);
 
 			this.checkIndex[16] = NONE;
 			this.checkIndex[8] = NONE;
@@ -57,17 +59,75 @@ export class Mover {
 			const enemyKingIndex = this.getKingIndex(enemyColor);
 			const isCheck = this.isAttacked(enemyKingIndex);
 
+			const lastMove = lastElementInAnArray(this.history);
 			if (isCheck) {
 				if (enemyColor !== Color.none) {
 					this.checkIndex[enemyColor] = enemyKingIndex;
+					lastMove.check = enemyKingIndex;
+				}
+			}
+
+			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 100) {
+				this.chessGame.gameOver = true;
+				this.chessGame.gameOverReason = 'draw';
+				this.chessGame.onGameOver();
+			}
+			if (move.from.type === Type.rook) {
+				if (move.from.color === Color.white) {
+					if (move.from.index % 8 === 7) {
+						this.board.K = false;
+					} else {
+						this.board.Q = false;
+					}
+				} else {
+					if (move.from.index % 7 === 0) {
+						this.board.k = false;
+					} else {
+						this.board.q = false;
+					}
+				}
+			}
+			if (move.from.type === Type.king) {
+				if (move.from.color === Color.white) {
+					this.board.K = false;
+					this.board.Q = false;
+				} else {
+					this.board.k = false;
+					this.board.q = false;
 				}
 			}
 
 			this.selectedIndex = NONE;
-			this.generateNextMove();
+
+			// run CallBack
+			this.chessGame.onMove();
+			if (lastMove.move) {
+				this.chessGame.onCastle();
+			}
+			if (
+				lastMove.from.type === Type.pawn &&
+				getCoords(lastMove.to.index).y ===
+					(lastMove.from.color === Color.white ? 0 : 7)
+			) {
+				if (lastMove.from.color === Color.white)
+					this.chessGame.onWhitePromote();
+				else this.chessGame.onBlackPromote();
+				// if not handled yet, promote to a queen
+				if (this.board.tiles[lastMove.to.index].getType() === Type.pawn) {
+					this.board.tiles[lastMove.to.index].code =
+						Type.queen | lastMove.from.color;
+				}
+			}
 		} else {
 			this.selectedIndex = NONE;
 		}
+	}
+
+	/**
+	 * alias for generateNextMove
+	 */
+	next() {
+		this.generateNextMove();
 	}
 
 	/**
@@ -126,41 +186,9 @@ export class Mover {
 		);
 	}
 
-	__move__(move: Move, justATest = false) {
+	__move__(move: Move) {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
-
-		if (!justATest) {
-			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() + 1 === 100) {
-				this.chessGame.gameOver = true;
-				this.chessGame.gameOverReason = 'draw';
-				this.chessGame.onGameOver();
-			}
-			if (from.isType(Type.rook)) {
-				if (from.isColor(Color.white)) {
-					if (from.index % 8 === 7) {
-						this.board.K = false;
-					} else {
-						this.board.Q = false;
-					}
-				} else {
-					if (from.index % 7 === 0) {
-						this.board.k = false;
-					} else {
-						this.board.q = false;
-					}
-				}
-			}
-			if (from.isType(Type.king)) {
-				if (from.isColor(Color.white)) {
-					this.board.K = false;
-					this.board.Q = false;
-				} else {
-					this.board.k = false;
-					this.board.q = false;
-				}
-			}
-		}
 
 		from.moved++;
 
@@ -168,43 +196,10 @@ export class Mover {
 			this.board.tiles[move.capture.index].code = Type.none;
 		}
 
-		let castle = false;
-		// castle
-		if (move.move) {
-			castle = true;
-			const from_ = this.board.tiles[move.move.from.index];
-			from_.moved++;
-			const to_ = this.board.tiles[move.move.to.index];
-			to_.code = from_.code;
-			from_.code = Type.none;
-		}
-
-		// promote
-		let promote = false;
-		if (
-			from.isType(Type.pawn) &&
-			getCoords(move.to.index).y === (from.isColor(Color.white) ? 0 : 7)
-		) {
-			promote = true;
-			to.code = Type.queen | from.getColor();
-		}
-
-		if (!promote) to.code = from.code;
+		to.code = from.code;
 		from.code = Type.none;
 		this.current = this.current == Color.white ? Color.black : Color.white;
 		this.history.push(move);
-
-		// run CallBack
-		if (!justATest) {
-			this.chessGame.onMove();
-
-			if (castle) {
-				this.chessGame.onCastle();
-			}
-			if (promote) {
-				this.chessGame.onPromote();
-			}
-		}
 	}
 
 	/**
@@ -328,7 +323,7 @@ export class Mover {
 			kingIndex = move.to.index;
 		}
 
-		this.__move__(move, true);
+		this.__move__(move);
 		const isAttacked = this.isAttacked(kingIndex);
 		this.undoMove(true);
 		return !isAttacked;
@@ -436,6 +431,8 @@ export class Mover {
 			move?: Move;
 		}
 	): Move {
+		// console.clear();
+		// console.log({ fromIndex, toIndex });
 		return {
 			from: {
 				index: fromIndex,
@@ -500,7 +497,7 @@ export class Mover {
 			});
 
 			// enpassant
-			const lastMove = lastElementInAnArray(this.history);
+			const lastMove = this.getLastMove();
 			if (
 				lastMove &&
 				lastMove.from.type === Type.pawn &&
@@ -526,7 +523,7 @@ export class Mover {
 			});
 
 			// enpassant
-			const lastMove = lastElementInAnArray(this.history);
+			const lastMove = this.getLastMove();
 			if (
 				lastMove &&
 				lastMove.from.type === Type.pawn &&

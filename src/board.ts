@@ -152,7 +152,7 @@ export class Board {
 		for (let file = 0; file < 8; file++) {
 			for (let rank = 0; rank < 8; rank++) {
 				const index = getIndex(rank, file);
-				result += this.tiles[index].toString();
+				result += this.tiles[index].getChessSymbol();
 				result += ' ';
 			}
 			result += '\n';

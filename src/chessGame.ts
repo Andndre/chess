@@ -11,7 +11,8 @@ export class ChessGame {
 	onMove: CallBackFunction = () => {};
 	onUndo: CallBackFunction = () => {};
 	onCapture: CallBackFunction = () => {};
-	onPromote: CallBackFunction = () => {};
+	onWhitePromote: CallBackFunction = () => {};
+	onBlackPromote: CallBackFunction = () => {};
 	onCastle: CallBackFunction = () => {};
 	onGameOver: CallBackFunction = () => {};
 	private constructor(fen: string, fiftyMoveRuleEnabled = true) {
@@ -36,8 +37,11 @@ export class ChessGame {
 			case 'capture':
 				this.onCapture = callBack;
 				return;
-			case 'promote':
-				this.onPromote = callBack;
+			case 'whitePromote':
+				this.onWhitePromote = callBack;
+				return;
+			case 'blackPromote':
+				this.onBlackPromote = callBack;
 				return;
 			case 'undo':
 				this.onUndo = callBack;

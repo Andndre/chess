@@ -25,7 +25,8 @@ export type ChessEvent =
 	| 'move'
 	| 'undo'
 	| 'capture'
-	| 'promote'
+	| 'whitePromote'
+	| 'blackPromote'
 	| 'castle'
 	| 'gameOver';
 export type GameOverReason = 'not true' | 'checkMate' | 'draw' | 'staleMate';

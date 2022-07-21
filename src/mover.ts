@@ -71,7 +71,7 @@ export class Mover {
 	}
 
 	/**
-	 * **If the move is invalid, then nothing will happen**.
+	 * **if the move is invalid, bad things might happen (or, nothing will happen)**.
 	 *
 	 * So make sure that the move was in `this.allMoves`
 	 *
@@ -97,7 +97,7 @@ export class Mover {
 	 * you **cannot** use shorthand notation such as `e4`,
 	 * or else it might will not work.
 	 *
-	 * Like moveStrict(), if the move is invalid, then nothing will happen
+	 * Like moveStrict(), if the move is invalid, bad things might happen
 	 */
 	moveStrictUsingChessNotation(move: string) {
 		if (move.indexOf('-') !== -1) {

@@ -149,6 +149,8 @@ export class Piece {
 			case Type.rook:
 				char = 'r';
 				break;
+			default:
+				return ' ';
 		}
 		if (this.getColor() == Color.white) {
 			return char.toUpperCase();

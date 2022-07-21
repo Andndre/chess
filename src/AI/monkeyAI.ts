@@ -1,23 +1,21 @@
 import { ChessGame } from '../chessGame.ts';
 import { randomFromArray } from '../utils.ts';
+import { BaseAI } from './baseAI.ts';
+import { getAllIndexesThatCanMove } from './utils/utils.ts';
 
 /**
  * He moves randomly
  */
-export class MonkeyAI {
-	chessGame: ChessGame;
+export class MonkeyAI extends BaseAI {
 	constructor(chessGame: ChessGame) {
-		this.chessGame = chessGame;
+		super(chessGame);
 	}
 	getMove() {
 		const mover = this.chessGame.mover;
-		const avIndexes: number[] = [];
-		for (const tile of this.chessGame.mover.allMoves) {
-			if (!tile.length) continue;
-			avIndexes.push(tile[0].from.index);
-		}
+		const avIndexes = getAllIndexesThatCanMove(this.chessGame);
 		if (avIndexes) {
-			return randomFromArray(mover.allMoves[randomFromArray(avIndexes)]);
+			const move = randomFromArray(mover.allMoves[randomFromArray(avIndexes)]);
+			return { from: move.from.index, to: move.to.index };
 		}
 	}
 }

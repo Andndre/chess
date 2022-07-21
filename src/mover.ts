@@ -134,9 +134,7 @@ export class Mover {
 			if (this.chessGame.fiftyMoveRule && this.halfMoveClock() + 1 === 100) {
 				this.chessGame.gameOver = true;
 				this.chessGame.gameOverReason = 'draw';
-				for (const cb of this.chessGame.onGameOver) {
-					cb();
-				}
+				this.chessGame.onGameOver();
 			}
 			if (from.isType(Type.rook)) {
 				if (from.isColor(Color.white)) {
@@ -198,18 +196,13 @@ export class Mover {
 
 		// run CallBack
 		if (!justATest) {
-			for (const cb of this.chessGame.onMove) {
-				cb();
-			}
+			this.chessGame.onMove();
+
 			if (castle) {
-				for (const cb of this.chessGame.onCastle) {
-					cb();
-				}
+				this.chessGame.onCastle();
 			}
 			if (promote) {
-				for (const cb of this.chessGame.onPromote) {
-					cb();
-				}
+				this.chessGame.onPromote();
 			}
 		}
 	}
@@ -222,9 +215,8 @@ export class Mover {
 		if (!move) return;
 
 		if (!justATest) {
-			for (const cb of this.chessGame.onUndo) {
-				cb();
-			}
+			this.chessGame.onUndo();
+
 			this.chessGame.gameOver = false;
 			this.chessGame.gameOverReason = 'not true';
 		}
@@ -284,15 +276,11 @@ export class Mover {
 		if (checkMate) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'checkMate';
-			for (const cb of this.chessGame.onGameOver) {
-				cb();
-			}
+			this.chessGame.onGameOver();
 		} else if (staleMate) {
 			this.chessGame.gameOver = true;
 			this.chessGame.gameOverReason = 'staleMate';
-			for (const cb of this.chessGame.onGameOver) {
-				cb();
-			}
+			this.chessGame.onGameOver();
 		}
 		this.allMoves.push(...moves);
 	}

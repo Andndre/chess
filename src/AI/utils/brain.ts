@@ -9,6 +9,7 @@ export const getMoveUsingMinMax = (chessGame: ChessGame) => {
 		for (const move of chessGame.mover.allMoves[avIndex]) {
 			const max = getMoveScore(move);
 			if (max < maxOfMin) continue;
+			const prevAvMoves = [...chessGame.mover.allMoves];
 			chessGame.mover.__move__(move, true);
 			chessGame.mover.generateNextMove();
 			for (const avIndexEnemy of getAllIndexesThatCanMove(chessGame)) {
@@ -26,6 +27,7 @@ export const getMoveUsingMinMax = (chessGame: ChessGame) => {
 				}
 			}
 			chessGame.mover.undoMove(true);
+			chessGame.mover.allMoves = prevAvMoves;
 		}
 	}
 

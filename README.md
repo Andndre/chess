@@ -25,31 +25,34 @@ npm i chess_typescript
 import { ... } from 'chess_typescript'
 ```
 
-Example: **Random Move**
+Example: **Easy AI vs Monkey AI**
 ```ts
 // import ....
 
 const main = async () => {
 	const chessGame = ChessGame.newStandardGame();
-	const mover = chessGame.mover;
-	new ChessTimer(60 * 3, chessGame, () => {
-		console.log('Time is up!');
-	});
-	chessGame.on('gameOver', () => {
-		console.log('The game is over: ' + chessGame.gameOverReason);
-	});
+	const easyAI = new AI.EasyAI(chessGame);
 	const monkeyAI = new AI.MonkeyAI(chessGame);
+
+	console.log(chessGame.board.toString());
+
+	let mv = 0;
+
 	while (!chessGame.gameOver) {
-		console.log(chessGame.board.getFenString(mover));
-		monkeyAI.takeTurn();
-		// await Utils.sleep(Math.random() * 3000 + 3000);
-		await Utils.sleep(Math.random() * 500);
+		const move = mv++ % 2 == 0 ? easyAI.getMove() : monkeyAI.getMove();
+
+		if (move) {
+			chessGame.mover.moveStrict(move.from, move.to);
+		}
+
+		console.clear();
+		console.log(move);
+		console.log(chessGame.board.toString());
+		// await Utils.sleep(2000);
 	}
 
-	console.log('FINAL FEN');
-	console.log(chessGame.board.getFenString(mover));
+	console.log(chessGame.gameOverReason + '!');
 };
 
 main().catch((err) => console.error(err));
-
 ```

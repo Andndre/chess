@@ -9,7 +9,6 @@ This library includes:
 - The board is a single-dimensional array.
 - Move history
 - Fifty-Move rule (Can be turned off)
-- Timer
 - Super basic AI
 
 ### **Usage**:

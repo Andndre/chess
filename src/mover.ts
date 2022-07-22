@@ -8,7 +8,7 @@ import {
 } from './coordinates.ts';
 import { Color, Piece, Type } from './piece.ts';
 import { CellStatus, Move } from './types.ts';
-import { lastElementInAnArray } from './utils.ts';
+import { isUpperCase, lastElementInAnArray } from './utils.ts';
 
 type CheckIndex = {
 	16: number;
@@ -20,10 +20,27 @@ export class Mover {
 	current: Color = Color.white;
 	selectedIndex = NONE;
 	history: Move[] = [];
+	enpassantTarget = -1;
 	checkIndex = {
 		16: NONE,
 		8: NONE,
 	} as CheckIndex;
+	/**
+	 * If white is permitted to castle on the Queen's side
+	 */
+	Q = true;
+	/**
+	 * If black is permitted to castle on the Queen's side
+	 */
+	q = true;
+	/**
+	 * If white is permitted to castle on the King's side
+	 */
+	K = true;
+	/**
+	 * If black is permitted to castle on the King's side,
+	 */
+	k = true;
 	/**
 	 * All moves for each tiles
 	 */
@@ -31,9 +48,10 @@ export class Mover {
 	checkMate = false;
 	staleMate = false;
 	chessGame: ChessGame;
-	constructor(board: Board, chessGame: ChessGame) {
+	constructor(board: Board, chessGame: ChessGame, fen: string) {
 		this.chessGame = chessGame;
 		this.board = board;
+		this.loadFenString(fen);
 		this.generateNextMove();
 	}
 	getLastMove() {
@@ -75,29 +93,37 @@ export class Mover {
 			if (move.from.type === Type.rook) {
 				if (move.from.color === Color.white) {
 					if (move.from.index % 8 === 7) {
-						this.board.K = false;
+						this.K = false;
 					} else {
-						this.board.Q = false;
+						this.Q = false;
 					}
 				} else {
 					if (move.from.index % 7 === 0) {
-						this.board.k = false;
+						this.k = false;
 					} else {
-						this.board.q = false;
+						this.q = false;
 					}
 				}
 			}
 			if (move.from.type === Type.king) {
 				if (move.from.color === Color.white) {
-					this.board.K = false;
-					this.board.Q = false;
+					this.K = false;
+					this.Q = false;
 				} else {
-					this.board.k = false;
-					this.board.q = false;
+					this.k = false;
+					this.q = false;
 				}
 			}
 
 			this.selectedIndex = NONE;
+			this.enpassantTarget = -1;
+
+			if (
+				lastMove.from.type === Type.pawn &&
+				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
+			) {
+				this.enpassantTarget = (lastMove.to.index + lastMove.from.index) / 2;
+			}
 
 			// run CallBack
 			this.chessGame.onMove();
@@ -139,6 +165,7 @@ export class Mover {
 	 */
 	moveStrict(from: number, to: number) {
 		this.selectedIndex = -1;
+		this.enpassantTarget = -1;
 		this.selectTile(from);
 		this.selectTile(to);
 	}
@@ -186,6 +213,14 @@ export class Mover {
 		);
 	}
 
+	/**
+	 * **DO NOT USE**.
+	 *
+	 * Use this function when creating your own AI using `BaseAI` class just
+	 * to **test** the move, then undo using `undoMove(true)`.
+	 * You can see the `getMoveUsingMinMax` example [right here](https://github.com/Andndre/chess/blob/main/src/AI/utils/brain.ts)
+	 * for generating a move for [this AI](https://github.com/Andndre/chess/blob/main/src/AI/easyAI.ts)
+	 */
 	__move__(move: Move) {
 		const from = this.board.tiles[move.from.index];
 		const to = this.board.tiles[move.to.index];
@@ -225,15 +260,15 @@ export class Mover {
 			if (from.isType(Type.king)) {
 				if (from.isColor(Color.white)) {
 					if (to.index - from.index === LEFT * 2) {
-						this.board.Q = true;
+						this.Q = true;
 					} else {
-						this.board.K = true;
+						this.K = true;
 					}
 				} else {
 					if (to.index - from.index === LEFT * 2) {
-						this.board.q = true;
+						this.q = true;
 					} else {
-						this.board.k = true;
+						this.k = true;
 					}
 				}
 			}
@@ -497,16 +532,12 @@ export class Mover {
 			});
 
 			// enpassant
-			const lastMove = this.getLastMove();
-			if (
-				lastMove &&
-				lastMove.from.type === Type.pawn &&
-				lastMove.to.index === from - 1 &&
-				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
-			) {
-				result.push(
-					this.getMove(from, from + offset - 1, { capture: from - 1 })
-				);
+			if (this.enpassantTarget !== -1) {
+				if (from + offset - 1 === this.enpassantTarget) {
+					result.push(
+						this.getMove(from, from + offset - 1, { capture: from - 1 })
+					);
+				}
 			}
 		}
 
@@ -523,16 +554,12 @@ export class Mover {
 			});
 
 			// enpassant
-			const lastMove = this.getLastMove();
-			if (
-				lastMove &&
-				lastMove.from.type === Type.pawn &&
-				lastMove.to.index === from + 1 &&
-				Math.abs(lastMove.to.index - lastMove.from.index) === DOWN * 2
-			) {
-				result.push(
-					this.getMove(from, from + offset + 1, { capture: from + 1 })
-				);
+			if (this.enpassantTarget !== -1) {
+				if (from + offset + 1 === this.enpassantTarget) {
+					result.push(
+						this.getMove(from, from + offset + 1, { capture: from + 1 })
+					);
+				}
 			}
 		}
 		return result;
@@ -776,5 +803,80 @@ export class Mover {
 
 	fullMoveNumber() {
 		return Math.floor(this.history.length / 2) + 1;
+	}
+
+	loadFenString(fen: string) {
+		const fenComponents = fen.split(' ');
+		const fenPositions = fenComponents[0].split('/');
+		// load FEN positions
+		// loop through each row
+		let index = 0;
+		for (const row of fenPositions) {
+			// loop through each character in the row
+			for (const char of row) {
+				// if the character is a number, add that many blank squares to the board
+				if (char.match(/[0-9]/)) {
+					const num = Number.parseInt(char);
+					// fill with none
+					for (let i = index; i <= index + num; i++) {
+						this.board.tiles[i] = new Piece(i, Type.none);
+					}
+					// skip
+					index += num;
+					continue;
+				}
+				// if the character is a letter, add that piece to the board
+				const piece = new Piece(index, Piece.getTypeFromChar(char)!);
+				// add the piece to the board
+				this.board.tiles[index] = piece;
+				const white = isUpperCase(char);
+				// set the piece's colour
+				this.board.tiles[index].code |= white ? Color.white : Color.black;
+				index++;
+			}
+		}
+		// use default
+		if (fenComponents.length < 2) return;
+		const current = fenComponents[1];
+		if (current === 'b') {
+			this.current = Color.black;
+		}
+		// use default
+		if (fenComponents.length < 3) return;
+		const castling = fenComponents[2];
+		this.K = false;
+		this.k = false;
+		this.Q = false;
+		this.q = false;
+		if (castling !== '-') {
+			for (const char of castling) {
+				switch (char) {
+					case 'K':
+						this.K = true;
+						break;
+					case 'k':
+						this.k = true;
+						break;
+					case 'Q':
+						this.Q = true;
+						break;
+					case 'q':
+						this.q = true;
+						break;
+				}
+			}
+		}
+
+		// use default
+		if (fenComponents.length < 4) return;
+		const enpassantTarget = fenComponents[3];
+		if (enpassantTarget !== '-') {
+			const x = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].indexOf(
+				enpassantTarget.charAt(0)
+			);
+			const y = 8 - parseInt(enpassantTarget.charAt(1));
+			const enpassantTargetIndex = getIndex(x, y);
+			this.enpassantTarget = enpassantTargetIndex;
+		}
 	}
 }

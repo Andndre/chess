@@ -1,5 +1,5 @@
 import { Color, Piece, Type } from './piece.ts';
-import { isUpperCase, lastElementInAnArray } from './utils.ts';
+import { lastElementInAnArray } from './utils.ts';
 import { getIndex } from './coordinates.ts';
 import { DOWN, NONE } from './constants.ts';
 import { Mover } from './mover.ts';
@@ -9,24 +9,13 @@ export class Board {
 	numToEdge: number[][] = [];
 	checkMate = false;
 	checkIndex = NONE;
-	/**
-	 * If white is permitted to castle on the Queen's side
-	 */
-	Q = true;
-	/**
-	 * If black is permitted to castle on the Queen's side
-	 */
-	q = true;
-	/**
-	 * If white is permitted to castle on the King's side
-	 */
-	K = true;
-	/**
-	 * If black is permitted to castle on the King's side,
-	 */
-	k = true;
 
-	private constructor() {
+	/**
+	 * **IMPORTANT**
+	 *
+	 * Create `Mover` after creating this
+	 */
+	constructor() {
 		for (let file = 0; file < 8; file++) {
 			for (let rank = 0; rank < 8; rank++) {
 				const up = 7 - rank;
@@ -47,49 +36,6 @@ export class Board {
 					Math.min(up, right),
 					Math.min(down, left),
 				];
-			}
-		}
-	}
-
-	/**
-	 *
-	 * @param fen FEN notation
-	 * @returns a new Board
-	 */
-	static fromFEN(fen: string) {
-		const board = new Board();
-		board.loadFenString(fen);
-		return board;
-	}
-
-	private loadFenString(fen: string) {
-		const fenComponents = fen.split(' ');
-		const fenPositions = fenComponents[0].split('/');
-		// load FEN positions
-		// loop through each row
-		let index = 0;
-		for (const row of fenPositions) {
-			// loop through each character in the row
-			for (const char of row) {
-				// if the character is a number, add that many blank squares to the board
-				if (char.match(/[0-9]/)) {
-					const num = Number.parseInt(char);
-					// fill with none
-					for (let i = index; i <= index + num; i++) {
-						this.tiles[i] = new Piece(i, Type.none);
-					}
-					// skip
-					index += num;
-					continue;
-				}
-				// if the character is a letter, add that piece to the board
-				const piece = new Piece(index, Piece.getTypeFromChar(char)!);
-				// add the piece to the board
-				this.tiles[index] = piece;
-				const white = isUpperCase(char);
-				// set the piece's colour
-				this.tiles[index].code |= white ? Color.white : Color.black;
-				index++;
 			}
 		}
 	}
@@ -120,10 +66,10 @@ export class Board {
 		result += thisMover.current === Color.white ? 'w' : 'b';
 		result += ' ';
 		const beforeCastle = result.length;
-		if (this.K) result += 'K';
-		if (this.Q) result += 'Q';
-		if (this.k) result += 'k';
-		if (this.q) result += 'q';
+		if (thisMover.K) result += 'K';
+		if (thisMover.Q) result += 'Q';
+		if (thisMover.k) result += 'k';
+		if (thisMover.q) result += 'q';
 		if (!(result.length - beforeCastle)) result += '-';
 		result += ' ';
 		const lastMove = lastElementInAnArray(thisMover.history);

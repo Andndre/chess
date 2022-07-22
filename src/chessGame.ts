@@ -16,8 +16,8 @@ export class ChessGame {
 	onCastle: CallBackFunction = () => {};
 	onGameOver: CallBackFunction = () => {};
 	private constructor(fen: string, fiftyMoveRuleEnabled = true) {
-		this.board = Board.fromFEN(fen);
-		this.mover = new Mover(this.board, this);
+		this.board = new Board();
+		this.mover = new Mover(this.board, this, fen);
 		this.fiftyMoveRule = fiftyMoveRuleEnabled;
 	}
 
@@ -25,6 +25,10 @@ export class ChessGame {
 		return new ChessGame('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
 	}
 
+	/**
+	 * If you use this, this.checkMate, this.staleMate, this.gameOver,
+	 * and other states that happen in late game might be wrong.
+	 */
 	static newGameFromFEN(fen: string) {
 		return new ChessGame(fen);
 	}

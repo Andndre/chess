@@ -2,7 +2,6 @@
 
 A minimal Chess Engine fully written in Typescript.
 
-This library includes:
 - All moves in chess
 - Move validation
 - FEN support
@@ -10,6 +9,7 @@ This library includes:
 - Move history
 - Fifty-Move rule (Can be turned off)
 - Super basic AI
+- Scalable
 
 ### **Usage**:
 - **DENO**
@@ -33,15 +33,8 @@ const main = async () => {
 	const easyAI = new AI.EasyAI(chessGame);
 	const monkeyAI = new AI.MonkeyAI(chessGame);
 
-	chessGame.onBlackPromote = () => {
-		const lastMove = chessGame.mover.getLastMove();
-		// pieceType | color
-		chessGame.board.tiles[lastMove.to.index].code =
-			Utils.randomFromArray([Type.bishop, Type.queen, Type.knight, Type.rook]) |
-			lastMove.from.color;
-		// if we didn't set the piece type on promote, the piece will turn into a queen
-	};
-
+	// if we didn't set the piece type on promote, the piece will turn into a queen
+	chessGame.onBlackPromote = () =>  chessGame.mover.promoteLastMoveTo(Utils.randomFromArray([Type.bishop, Type.queen, Type.knight, Type.rook]));
 
 	console.log(chessGame.board.toString());
 	/**

@@ -54,9 +54,53 @@ export class Mover {
 		this.loadFenString(fen);
 		this.generateNextMove();
 	}
+
+	/**
+	 * Alias for
+	 * ```ts
+	 * const lastMove = this.getLastMove();
+	 * return lastMove.from.type !== this.board.tiles[lastMove.to.index].getType();
+	 * ```
+	 */
+	isPromote() {
+		const lastMove = this.getLastMove();
+		return lastMove.from.type !== this.board.tiles[lastMove.to.index].getType();
+	}
+
+	/**
+	 * Alias for
+	 * ```ts
+	 * const lastMove = this.getLastMove();
+	 * const code = type | lastMove.from.color;
+	 * lastMove.to.type = type;
+	 * this.board.tiles[lastMove.to.index].code = code;
+	 * ```
+	 */
+	promoteLastMoveTo(type: Type) {
+		const lastMove = this.getLastMove();
+		const code = type | lastMove.from.color;
+		lastMove.to.type = type;
+		this.board.tiles[lastMove.to.index].code = code;
+	}
+
+	/**
+	 * Alias for
+	 * ```ts
+	 * lastElementInAnArray(this.history);
+	 * ```
+	 */
 	getLastMove() {
 		return lastElementInAnArray(this.history);
 	}
+
+	/**
+	 * If `this.selectedIndex === -1`, it will select a tile ONLY IF
+	 * the piece in that index was the same color as the `this.current`
+	 *
+	 * If `this.selectedIndex !== -1` it will move the piece from
+	 * `this.selectedIndex` to the input `index` ONLY IF `index`
+	 * was a valid destination
+	 */
 	selectTile(index: number) {
 		const isFriendly = this.board.tiles[index].isColor(this.current);
 		if (isFriendly) {
@@ -206,6 +250,9 @@ export class Mover {
 		}
 	}
 
+	/**
+	 * Checks if the move was in `this.allMoves`
+	 */
 	isValid(move: Move) {
 		if (!this.allMoves[move.from.index]) return false;
 		return !!this.allMoves[move.from.index].find(

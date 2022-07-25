@@ -311,6 +311,8 @@ export class Mover {
 
 	/**
 	 * Restore the board to the state it was in before the last move in the history was made
+	 *
+	 * `justAText = false` means do not run onUndo callBack
 	 */
 	undoMove(justATest = false) {
 		const move = this.history.pop();
@@ -530,6 +532,9 @@ export class Mover {
 		return false;
 	}
 
+	/**
+	 * Convert fromIndex and toIndex (and optionally capture?: number; move?: Move;) to a Move object
+	 */
 	getMove(
 		fromIndex: number,
 		toIndex: number,
@@ -564,8 +569,6 @@ export class Mover {
 
 	/**
 	 * The function returns an array of possible moves for a pawn
-	 * @param {number} from - The index of the piece that is moving.
-	 * @returns Available moves for the pawn (indexes of the squares)
 	 */
 	__pawnMove__(from: number): Move[] {
 		const result: Move[] = [];
@@ -638,8 +641,7 @@ export class Mover {
 	}
 
 	/**
-	 * @param index - index of the piece
-	 * @returns - true if the piece was attacked
+	 * Check if the piece on the input `index` is under attack.
 	 */
 	isAttacked(index: number): boolean {
 		/* Checking if the piece type is not none. */
@@ -690,8 +692,7 @@ export class Mover {
 	}
 
 	/**
-	 * @param from - The index of the piece you want to move
-	 * @returns Available moves of the knight (indexes of the squares)
+	 * The function returns an array of possible moves for a knight
 	 */
 	__knightMove__(from: number, obj = this): Move[] {
 		const result: Move[] = [];
@@ -731,8 +732,7 @@ export class Mover {
 	}
 
 	/**
-	 * @param {number} from - the index of the piece you want to move
-	 * @returns Available moves of the king (indexes of the squares)
+	 * The function returns an array of possible moves for a king
 	 */
 	__kingMove__(from: number, obj = this): Move[] {
 		const result: Move[] = [];
@@ -819,8 +819,6 @@ export class Mover {
 
 	/**
 	 * It returns an array of all the moves that a piece can make in a straight line
-	 * @param {number} from - The index of the piece you want to move.
-	 * @returns An array of moves.
 	 */
 	__alignAxisMove__(from: number, obj = this): Move[] {
 		const piece = obj.board.tiles[from];
@@ -844,8 +842,6 @@ export class Mover {
 
 	/**
 	 * It returns an array of all the moves that a piece can make in a diagonal direction
-	 * @param {number} from - the index of the piece you want to move
-	 * @returns An array of moves.
 	 */
 	__diagonalAxisMove__(from: number, obj = this): Move[] {
 		const piece = obj.board.tiles[from];

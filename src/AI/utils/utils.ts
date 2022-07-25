@@ -1,4 +1,3 @@
-import { ChessGame } from '../../chessGame.ts';
 import { Type } from '../../piece.ts';
 import { Move } from '../../types.ts';
 

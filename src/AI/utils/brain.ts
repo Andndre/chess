@@ -1,18 +1,19 @@
 import { ChessGame } from '../../chessGame.ts';
-import { getAllIndexesThatCanMove, getMoveScore } from './utils.ts';
+import { getMoveScore } from './utils.ts';
 
 export const getMoveUsingMinMax = (chessGame: ChessGame) => {
 	const result = { from: -1, to: -1 };
 	let highScore = -Infinity;
 	let maxOfMin = -Infinity;
-	for (const avIndex of getAllIndexesThatCanMove(chessGame)) {
+	const mover = chessGame.mover;
+	for (const avIndex of mover.getAllIndexesThatCanMove()) {
 		for (const move of chessGame.mover.allMoves[avIndex]) {
 			const max = getMoveScore(move);
 			if (max < maxOfMin) continue;
 			const prevAvMoves = [...chessGame.mover.allMoves];
 			chessGame.mover.__move__(move);
 			chessGame.mover.next();
-			for (const avIndexEnemy of getAllIndexesThatCanMove(chessGame)) {
+			for (const avIndexEnemy of mover.getAllIndexesThatCanMove()) {
 				for (const moveEnemy of chessGame.mover.allMoves[avIndexEnemy]) {
 					const min = getMoveScore(moveEnemy);
 					if (min > maxOfMin) {

@@ -224,6 +224,14 @@ export class Mover {
 	}
 
 	/**
+	 * Check if the current king is under attack.
+	 */
+	isCheck() {
+		const enemyKingIndex = this.getKingIndex(this.current);
+		return this.isAttacked(enemyKingIndex);
+	}
+
+	/**
 	 * Example of using chess notation:
 	 * ```ts
 	 * // Move from `b1` to `d2`
@@ -272,7 +280,7 @@ export class Mover {
 	/**
 	 * **DO NOT USE**.
 	 *
-	 * Use this function when creating your own AI using `BaseAI` class just
+	 * Use this function when creating your own AI using `BaseAI` interface just
 	 * to **test** the move, then undo using `undoMove(true)`.
 	 * You can see the `getMoveUsingMinMax` example [right here](https://github.com/Andndre/chess/blob/main/src/AI/utils/brain.ts)
 	 * for generating a move for [this AI](https://github.com/Andndre/chess/blob/main/src/AI/easyAI.ts)

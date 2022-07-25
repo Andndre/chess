@@ -21,15 +21,6 @@ export const getPieceScore = (type: Type) => {
 	}
 };
 
-export const getAllIndexesThatCanMove = (chessGame: ChessGame) => {
-	const avIndexes: number[] = [];
-	for (const tile of chessGame.mover.allMoves) {
-		if (!tile.length) continue;
-		avIndexes.push(tile[0].from.index);
-	}
-	return avIndexes;
-};
-
 export const getMoveScore = (move: Move) => {
 	return getPieceScore(move.to.type);
 };

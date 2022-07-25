@@ -93,6 +93,15 @@ export class Mover {
 		return lastElementInAnArray(this.history);
 	}
 
+	getAllIndexesThatCanMove() {
+		const avIndexes: number[] = [];
+		for (const tile of this.chessGame.mover.allMoves) {
+			if (!tile.length) continue;
+			avIndexes.push(tile[0].from.index);
+		}
+		return avIndexes;
+	}
+
 	/**
 	 * If `this.selectedIndex === -1`, it will select a tile ONLY IF
 	 * the piece in that index was the same color as the `this.current`

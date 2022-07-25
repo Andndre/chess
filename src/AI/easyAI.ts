@@ -2,7 +2,6 @@ import { ChessGame } from '../chessGame.ts';
 import { randomFromArray } from '../utils.ts';
 import { BaseAI } from './baseAI.ts';
 import { getMoveUsingMinMax } from './utils/brain.ts';
-import { getAllIndexesThatCanMove } from './utils/utils.ts';
 
 export class EasyAI implements BaseAI {
 	chessGame: ChessGame;
@@ -11,7 +10,8 @@ export class EasyAI implements BaseAI {
 	}
 	getMove() {
 		if (this.chessGame.mover.history.length < 5) {
-			const avIndexes = getAllIndexesThatCanMove(this.chessGame);
+			const mover = this.chessGame.mover;
+			const avIndexes = mover.getAllIndexesThatCanMove();
 			if (avIndexes) {
 				const move = randomFromArray(
 					this.chessGame.mover.allMoves[randomFromArray(avIndexes)]

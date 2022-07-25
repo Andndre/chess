@@ -4,9 +4,10 @@ import { BaseAI } from './baseAI.ts';
 import { getMoveUsingMinMax } from './utils/brain.ts';
 import { getAllIndexesThatCanMove } from './utils/utils.ts';
 
-export class EasyAI extends BaseAI {
+export class EasyAI implements BaseAI {
+	chessGame: ChessGame;
 	constructor(chessGame: ChessGame) {
-		super(chessGame);
+		this.chessGame = chessGame;
 	}
 	getMove() {
 		if (this.chessGame.mover.history.length < 5) {

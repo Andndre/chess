@@ -6,9 +6,10 @@ import { getAllIndexesThatCanMove } from './utils/utils.ts';
 /**
  * He moves randomly
  */
-export class MonkeyAI extends BaseAI {
+export class MonkeyAI implements BaseAI {
+	chessGame: ChessGame;
 	constructor(chessGame: ChessGame) {
-		super(chessGame);
+		this.chessGame = chessGame;
 	}
 	getMove() {
 		const mover = this.chessGame.mover;

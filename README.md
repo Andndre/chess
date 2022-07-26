@@ -1,5 +1,7 @@
 # Chess-Typescript
 
+## ⚠️ Do not use it. This is a very experimental project.
+
 A minimal Chess Engine fully written in Typescript.
 
 - All moves in chess

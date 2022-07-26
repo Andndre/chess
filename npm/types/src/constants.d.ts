@@ -1,0 +1,10 @@
+export declare const NONE = -1;
+export declare const DOWN = 8;
+export declare const UP = -8;
+export declare const LEFT = -1;
+export declare const RIGHT = 1;
+export declare const DOWNLEFT: number;
+export declare const UPRIGHT: number;
+export declare const DOWNRIGHT: number;
+export declare const UPLEFT: number;
+export declare const directionOffsets: number[];

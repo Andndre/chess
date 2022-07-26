@@ -1,6 +1,0 @@
-build_npm.ts
-testing.ts
-src
-mod.ts
-.vscode
-!npm/**

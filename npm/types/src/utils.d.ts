@@ -8,4 +8,4 @@ export declare function isUpperCase(str: string): boolean;
 export declare function sleep(millisecondsDuration: number): Promise<unknown>;
 export declare function repeat(string: string, multiplier: number): string;
 export declare function randomFromArray<T>(array: T[]): T;
-export declare function lastElementInAnArray<T>(array: T[]): T;
+export declare function lastElementInAnArray<T>(array: T[]): T | undefined;

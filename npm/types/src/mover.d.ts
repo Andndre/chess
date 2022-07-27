@@ -2,17 +2,11 @@ import { Board } from './board.js';
 import { ChessGame } from './chessGame.js';
 import { Color, Type } from './piece.js';
 import { CellStatus, Move } from './types.js';
-declare type CheckIndex = {
-    16: number;
-    8: number;
-};
 export declare class Mover {
     board: Board;
-    current: Color;
+    current: Color.white | Color.black;
     selectedIndex: number;
     history: Move[];
-    enpassantTarget: number;
-    checkIndex: CheckIndex;
     /**
      * If white is permitted to castle on the Queen's side
      */
@@ -41,6 +35,7 @@ export declare class Mover {
      * Alias for
      * ```ts
      * const lastMove = this.getLastMove();
+     * if (!lastMove) return false;
      * return lastMove.from.type !== this.board.tiles[lastMove.to.index].getType();
      * ```
      */
@@ -49,6 +44,7 @@ export declare class Mover {
      * Alias for
      * ```ts
      * const lastMove = this.getLastMove();
+     * if (!lastMove) return;
      * const code = type | lastMove.from.color;
      * lastMove.to.type = type;
      * this.board.tiles[lastMove.to.index].code = code;
@@ -61,7 +57,7 @@ export declare class Mover {
      * lastElementInAnArray(this.history);
      * ```
      */
-    getLastMove(): Move;
+    getLastMove(): Move | undefined;
     getAllIndexesThatCanMove(): number[];
     /**
      * If `this.selectedIndex === -1`, it will select a tile ONLY IF
@@ -110,14 +106,20 @@ export declare class Mover {
      */
     isValid(move: Move): boolean;
     /**
-     * **DO NOT USE**.
-     *
-     * Use this function when creating your own AI using `BaseAI` interface just
-     * to **test** the move, then undo using `undoMove(true)`.
-     * You can see the `getMoveUsingMinMax` example [right here](https://github.com/Andndre/chess/blob/main/src/AI/utils/brain.ts)
-     * for generating a move for [this AI](https://github.com/Andndre/chess/blob/main/src/AI/easyAI.ts)
+     * Alias for
+     * ```ts
+     * this.move(move, true)
+     * ```
      */
-    __move__(move: Move): void;
+    moveTest(move: Move): void;
+    /**
+     * If you don't want any callbacks to be executed, set `justATest` to `true`.
+     */
+    move(move: Move, justATest?: boolean): void;
+    /**
+     * returns -1 if there is no enpassant target
+     */
+    getEnpassantTargetIndex(): number;
     /**
      * Restore the board to the state it was in before the last move in the history was made
      *
@@ -200,4 +202,3 @@ export declare class Mover {
     fullMoveNumber(): number;
     loadFenString(fen: string): void;
 }
-export {};

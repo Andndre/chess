@@ -30,6 +30,8 @@ function randomFromArray(array) {
 }
 exports.randomFromArray = randomFromArray;
 function lastElementInAnArray(array) {
+    if (!array.length)
+        return undefined;
     return array[array.length - 1];
 }
 exports.lastElementInAnArray = lastElementInAnArray;

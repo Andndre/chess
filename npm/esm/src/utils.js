@@ -23,5 +23,7 @@ export function randomFromArray(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 export function lastElementInAnArray(array) {
+    if (!array.length)
+        return undefined;
     return array[array.length - 1];
 }

@@ -357,31 +357,36 @@ class Mover {
         const move = this.history.pop();
         if (!move)
             return;
-        if (!justATest) {
-            this.chessGame.onUndo();
-            this.chessGame.gameOver = false;
-            this.chessGame.gameOverReason = 'not true';
-        }
         const from = this.board.tiles[move.from.index];
         const to = this.board.tiles[move.to.index];
         from.moved--;
         if (!from.moved) {
             if (from.isType(piece_js_1.Type.king)) {
                 if (from.isColor(piece_js_1.Color.white)) {
-                    if (to.index - from.index === constants_js_1.LEFT * 2) {
-                        this.Q = true;
-                    }
-                    else {
-                        this.K = true;
-                    }
+                    this.Q = true;
+                    this.K = true;
                 }
                 else {
-                    if (to.index - from.index === constants_js_1.LEFT * 2) {
-                        this.q = true;
-                    }
-                    else {
-                        this.k = true;
-                    }
+                    this.q = true;
+                    this.k = true;
+                }
+            }
+        }
+        else if (from.isType(piece_js_1.Type.rook)) {
+            if (from.isColor(piece_js_1.Color.white)) {
+                if (from.index % 8 === 7) {
+                    this.K = true;
+                }
+                else {
+                    this.Q = true;
+                }
+            }
+            else {
+                if (from.index % 7 === 0) {
+                    this.k = true;
+                }
+                else {
+                    this.q = true;
                 }
             }
         }
@@ -398,6 +403,11 @@ class Mover {
         to.code = move.to.color | move.to.type;
         from.code = move.from.color | move.from.type;
         this.current = this.current == piece_js_1.Color.white ? piece_js_1.Color.black : piece_js_1.Color.white;
+        if (!justATest) {
+            this.chessGame.onUndo();
+            this.chessGame.gameOver = false;
+            this.chessGame.gameOverReason = 'not true';
+        }
     }
     /**
      * Fills the legal moves array with the legal moves for the current player

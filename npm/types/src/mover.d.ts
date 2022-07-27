@@ -37,7 +37,7 @@ export declare class Mover {
      * ```ts
      * const lastMove = this.getLastMove();
      * if (!lastMove) return false;
-     * return lastMove.from.type !== this.board.tiles[lastMove.to.index].getType();
+     * return !!lastMove.promoteTo;
      * ```
      */
     isPromote(): boolean;
@@ -47,7 +47,7 @@ export declare class Mover {
      * const lastMove = this.getLastMove();
      * if (!lastMove) return;
      * const code = type | lastMove.from.color;
-     * lastMove.to.type = type;
+     * lastMove.promoteTo = type;
      * this.board.tiles[lastMove.to.index].code = code;
      * ```
      */

@@ -51,13 +51,13 @@ export class Mover {
 	 * ```ts
 	 * const lastMove = this.getLastMove();
 	 * if (!lastMove) return false;
-	 * return lastMove.from.type !== this.board.tiles[lastMove.to.index].getType();
+	 * return !!lastMove.promoteTo;
 	 * ```
 	 */
 	isPromote() {
 		const lastMove = this.getLastMove();
 		if (!lastMove) return false;
-		return lastMove.from.type !== this.board.tiles[lastMove.to.index].getType();
+		return !!lastMove.promoteTo;
 	}
 
 	/**
@@ -66,7 +66,7 @@ export class Mover {
 	 * const lastMove = this.getLastMove();
 	 * if (!lastMove) return;
 	 * const code = type | lastMove.from.color;
-	 * lastMove.to.type = type;
+	 * lastMove.promoteTo = type;
 	 * this.board.tiles[lastMove.to.index].code = code;
 	 * ```
 	 */
@@ -74,7 +74,7 @@ export class Mover {
 		const lastMove = this.getLastMove();
 		if (!lastMove) return;
 		const code = type | lastMove.from.color;
-		lastMove.to.type = type;
+		lastMove.promoteTo = type;
 		this.board.tiles[lastMove.to.index].code = code;
 	}
 

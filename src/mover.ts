@@ -355,8 +355,9 @@ export class Mover {
 		}
 
 		if (move.capture) {
-			this.board.tiles[move.capture.index].code =
-				move.capture.color | move.capture.type;
+			const to_ = this.board.tiles[move.capture.index];
+			to_.moved--;
+			to_.code = move.capture.color | move.capture.type;
 		}
 
 		if (move.move) {

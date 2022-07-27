@@ -468,6 +468,11 @@ class Mover {
         }
         if (move.from.type === piece_js_1.Type.king) {
             kingIndex = move.to.index;
+            if (Math.abs(move.from.index - move.to.index) === constants_js_1.RIGHT * 2) {
+                const mid = (move.from.index + move.to.index) / 2;
+                if (this.isAttacked(mid))
+                    return false;
+            }
         }
         this.__move__(move);
         const isAttacked = this.isAttacked(kingIndex);
@@ -753,7 +758,7 @@ class Mover {
         if (color == piece_js_1.Color.none)
             return result;
         const kingIndex = color === piece_js_1.Color.white ? 60 : 4;
-        const currentKingIndex = obj.getKingIndex(color);
+        // const currentKingIndex = obj.getKingIndex(color);
         // castle
         if (kingIndex !== from || obj.board.tiles[kingIndex].moved)
             return result;
@@ -761,33 +766,15 @@ class Mover {
             return result;
         // Queen's side
         if (!obj.board.tiles[kingIndex - 4].moved) {
-            let allowedToCastle = true;
-            for (let i = 1; i < 4; i++) {
-                if (!obj.__isLegal__(obj.getMove(kingIndex, kingIndex - i), currentKingIndex)) {
-                    allowedToCastle = false;
-                    break;
-                }
-            }
-            if (allowedToCastle) {
-                result.push(obj.getMove(kingIndex, kingIndex - 2, {
-                    move: obj.getMove(kingIndex - 4, kingIndex - 1),
-                }));
-            }
+            result.push(obj.getMove(kingIndex, kingIndex - 2, {
+                move: obj.getMove(kingIndex - 4, kingIndex - 1),
+            }));
         }
         // King's side
         if (!obj.board.tiles[kingIndex + 3].moved) {
-            let allowedToCastle = true;
-            for (let i = 1; i < 3; i++) {
-                if (!obj.__isLegal__(obj.getMove(kingIndex, kingIndex + i), currentKingIndex)) {
-                    allowedToCastle = false;
-                    break;
-                }
-            }
-            if (allowedToCastle) {
-                result.push(obj.getMove(kingIndex, kingIndex + 2, {
-                    move: obj.getMove(kingIndex + 3, kingIndex + 1),
-                }));
-            }
+            result.push(obj.getMove(kingIndex, kingIndex + 2, {
+                move: obj.getMove(kingIndex + 3, kingIndex + 1),
+            }));
         }
         return result;
     }

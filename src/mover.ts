@@ -444,6 +444,10 @@ export class Mover {
 		if (move.from.type === Type.king) {
 			kingIndex = move.to.index;
 			if (Math.abs(move.from.index - move.to.index) === RIGHT * 2) {
+				if (move.from.index - move.move!.from.index === 3) {
+					if (!this.board.tiles[move.move!.from.index + 1].isType(Type.none))
+						return false;
+				}
 				const mid = (move.from.index + move.to.index) / 2;
 				if (this.isAttacked(mid)) return false;
 			}

@@ -7,7 +7,8 @@ import {
 	getIndexFromChessNotation,
 } from './coordinates.ts';
 import { Color, Piece, Type } from './piece.ts';
-import { CellStatus, Move } from './types.ts';
+import { CellStatus } from './types.ts';
+import { Move } from './move.ts';
 import { isUpperCase, lastElementInAnArray } from './utils.ts';
 
 export class Mover {
@@ -275,22 +276,26 @@ export class Mover {
 
 		this.history.push(move);
 
+		if (
+			move.from.type === Type.pawn &&
+			getCoords(move.to.index).y === (move.from.color === Color.white ? 0 : 7)
+		) {
+			if (!justATest) {
+				if (move.from.color === Color.white) this.chessGame.onWhitePromote();
+				else {
+					this.chessGame.onBlackPromote();
+				}
+			}
+			// if not handled yet, promote to a queen
+			if (this.board.tiles[move.to.index].getType() === Type.pawn) {
+				this.board.tiles[move.to.index].code = Type.queen | move.from.color;
+			}
+		}
 		// run CallBack
 		if (!justATest) {
 			this.chessGame.onMove();
 			if (move.move) {
 				this.chessGame.onCastle();
-			}
-			if (
-				move.from.type === Type.pawn &&
-				getCoords(move.to.index).y === (move.from.color === Color.white ? 0 : 7)
-			) {
-				if (move.from.color === Color.white) this.chessGame.onWhitePromote();
-				else this.chessGame.onBlackPromote();
-				// if not handled yet, promote to a queen
-				if (this.board.tiles[move.to.index].getType() === Type.pawn) {
-					this.board.tiles[move.to.index].code = Type.queen | move.from.color;
-				}
 			}
 		}
 	}
@@ -372,10 +377,10 @@ export class Mover {
 
 		if (!justATest) {
 			this.chessGame.onUndo();
-
-			this.chessGame.gameOver = false;
-			this.chessGame.gameOverReason = 'not true';
 		}
+
+		this.chessGame.gameOver = false;
+		this.chessGame.gameOverReason = 'not true';
 	}
 
 	/**
@@ -528,12 +533,38 @@ export class Mover {
 		moves: Move[];
 		insertIf?: CellStatus[];
 	}): boolean {
+		function pushPromote(board: Board) {
+			if (move.from.type === Type.pawn) {
+				const { y } = getCoords(move.to.index);
+				const edgeOrdinate = move.from.color === Color.white ? 0 : 7;
+				if (y === edgeOrdinate) {
+					for (const type of [
+						Type.queen,
+						Type.rook,
+						Type.bishop,
+						Type.knight,
+					]) {
+						const newMove = new Move(board, move.from.index, move.to.index);
+						newMove.to.type = type;
+						moves.push(newMove);
+					}
+					return true;
+				}
+			}
+			return false;
+		}
 		const piece = this.board.tiles[move.from.index];
 		const pieceTo = this.board.tiles[move.to.index];
 		const color = piece.getColor();
 		const colorTo = pieceTo.getColor();
 		if (Piece.invertColor(color) == colorTo) {
 			if (insertIf.indexOf('enemy') != NONE) {
+				move.capture = {
+					color: colorTo,
+					index: pieceTo.index,
+					type: pieceTo.getType(),
+				};
+				if (pushPromote(this.board)) return true;
 				moves.push(move);
 				return true;
 			}
@@ -541,51 +572,19 @@ export class Mover {
 		}
 		if (colorTo == Color.none) {
 			if (insertIf.indexOf('none') != NONE) {
+				if (pushPromote(this.board)) return true;
 				moves.push(move);
 				return true;
 			}
 			return false;
 		}
-		if (insertIf.indexOf('friend') != NONE) {
-			moves.push(move);
-			return true;
-		}
+		// if (insertIf.indexOf('friend') != NONE) {
+		// 	console.log('never gonna called');
+		// 	if (pushPromote(this.board)) return true;
+		// 	moves.push(move);
+		// 	return true;
+		// }
 		return false;
-	}
-
-	/**
-	 * Convert fromIndex and toIndex (and optionally capture?: number; move?: Move;) to a Move object
-	 */
-	getMove(
-		fromIndex: number,
-		toIndex: number,
-		options?: {
-			capture?: number;
-			move?: Move;
-		}
-	): Move {
-		// console.clear();
-		// console.log({ fromIndex, toIndex });
-		return {
-			from: {
-				index: fromIndex,
-				type: this.board.tiles[fromIndex].getType(),
-				color: this.board.tiles[fromIndex].getColor(),
-			},
-			to: {
-				index: toIndex,
-				type: this.board.tiles[toIndex].getType(),
-				color: this.board.tiles[toIndex].getColor(),
-			},
-			capture: options?.capture
-				? {
-						index: options?.capture,
-						type: this.board.tiles[options?.capture].getType(),
-						color: this.board.tiles[options?.capture].getColor(),
-				  }
-				: undefined,
-			move: options?.move ? options.move : undefined,
-		};
 	}
 
 	/**
@@ -603,7 +602,7 @@ export class Mover {
 		/* Insert move forward if the square is empty */
 		if (
 			this.__insertIf__({
-				move: this.getMove(from, index),
+				move: new Move(this.board, from, index),
 				moves: result,
 				insertIf: ['none'],
 			})
@@ -611,7 +610,7 @@ export class Mover {
 			/* If the pawn never moved, it can move two squares */
 			if (y === (offset == DOWN ? 1 : 6)) {
 				this.__insertIf__({
-					move: this.getMove(from, index + offset),
+					move: new Move(this.board, from, index + offset),
 					moves: result,
 					insertIf: ['none'],
 				});
@@ -624,7 +623,7 @@ export class Mover {
 		if (index % 8 != 0) {
 			/* Pawn can capture diagonally to the left.*/
 			this.__insertIf__({
-				move: this.getMove(from, index - 1),
+				move: new Move(this.board, from, index - 1),
 				moves: result,
 				insertIf: ['enemy'],
 			});
@@ -632,9 +631,7 @@ export class Mover {
 			// enpassant
 			if (enpassantTarget !== -1) {
 				if (from + offset - 1 === enpassantTarget) {
-					result.push(
-						this.getMove(from, from + offset - 1, { capture: from - 1 })
-					);
+					result.push(new Move(this.board, from, from + offset - 1, from - 1));
 				}
 			}
 		}
@@ -646,7 +643,7 @@ export class Mover {
 		if ((index - 7) % 8 != 0) {
 			/* Pawn can capture diagonally to the right.*/
 			this.__insertIf__({
-				move: this.getMove(from, index + 1),
+				move: new Move(this.board, from, index + 1),
 				moves: result,
 				insertIf: ['enemy'],
 			});
@@ -654,9 +651,7 @@ export class Mover {
 			// enpassant
 			if (enpassantTarget !== -1) {
 				if (from + offset + 1 === enpassantTarget) {
-					result.push(
-						this.getMove(from, from + offset + 1, { capture: from + 1 })
-					);
+					result.push(new Move(this.board, from, from + offset + 1, from + 1));
 				}
 			}
 		}
@@ -738,7 +733,7 @@ export class Mover {
 						continue;
 					const index = getIndex(x + xOffset, y + yOffset);
 					obj.__insertIf__({
-						move: obj.getMove(from, index),
+						move: new Move(obj.board, from, index),
 						moves: result,
 					});
 				}
@@ -777,7 +772,10 @@ export class Mover {
 			const yFinal = y + yOffset;
 			if (xFinal < 0 || xFinal > 7 || yFinal < 0 || yFinal > 7) continue;
 			const index = getIndex(xFinal, yFinal);
-			obj.__insertIf__({ move: obj.getMove(from, index), moves: result });
+			obj.__insertIf__({
+				move: new Move(obj.board, from, index),
+				moves: result,
+			});
 		}
 
 		const color = obj.board.tiles[from].getColor();
@@ -795,8 +793,9 @@ export class Mover {
 		// Queen's side
 		if (!obj.board.tiles[kingIndex - 4].moved) {
 			result.push(
-				obj.getMove(kingIndex, kingIndex - 2, {
-					move: obj.getMove(kingIndex - 4, kingIndex - 1),
+				new Move(obj.board, kingIndex, kingIndex - 2, undefined, {
+					fromIndex: kingIndex - 4,
+					toIndex: kingIndex - 1,
 				})
 			);
 		}
@@ -804,8 +803,9 @@ export class Mover {
 		// King's side
 		if (!obj.board.tiles[kingIndex + 3].moved) {
 			result.push(
-				obj.getMove(kingIndex, kingIndex + 2, {
-					move: obj.getMove(kingIndex + 3, kingIndex + 1),
+				new Move(obj.board, kingIndex, kingIndex + 2, undefined, {
+					fromIndex: kingIndex + 3,
+					toIndex: kingIndex + 1,
 				})
 			);
 		}
@@ -828,7 +828,7 @@ export class Mover {
 				current += dirrection;
 				const color = obj.board.tiles[current].getColor();
 				if (color == Color.none || color == Piece.invertColor(colorToMove))
-					moves.push(obj.getMove(from, current));
+					moves.push(new Move(obj.board, from, current));
 				if (color == colorToMove || color == Piece.invertColor(colorToMove))
 					break;
 			}
@@ -851,7 +851,7 @@ export class Mover {
 				current += dirrection;
 				const color = obj.board.tiles[current].getColor();
 				if (color == Color.none || color == Piece.invertColor(colorToMove)) {
-					moves.push(obj.getMove(from, current));
+					moves.push(new Move(obj.board, from, current));
 				}
 				if (color == colorToMove || color == Piece.invertColor(colorToMove)) {
 					break;

@@ -1,5 +1,4 @@
 import { Type } from '../../piece.ts';
-import { Move } from '../../types.ts';
 
 export const getPieceScore = (type: Type) => {
 	switch (type) {
@@ -18,8 +17,4 @@ export const getPieceScore = (type: Type) => {
 		default:
 			return 0;
 	}
-};
-
-export const getMoveScore = (move: Move) => {
-	return getPieceScore(move.to.type);
 };

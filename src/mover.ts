@@ -449,7 +449,7 @@ export class Mover {
 			}
 		}
 
-		this.move(move);
+		this.moveTest(move);
 		const isAttacked = this.isAttacked(kingIndex);
 		this.undoMove(true);
 		return !isAttacked;

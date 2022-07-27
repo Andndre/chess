@@ -333,13 +333,17 @@ class Mover {
         const from = this.board.tiles[move.from.index];
         const to = this.board.tiles[move.to.index];
         from.moved++;
+        to.moved++;
         if (move.capture) {
-            this.board.tiles[move.capture.index].code = piece_js_1.Type.none;
+            const to_ = this.board.tiles[move.capture.index];
+            to_.code = piece_js_1.Type.none;
+            to_.moved++;
         }
         if (move.move) {
             const from_ = this.board.tiles[move.move.from.index];
             from_.moved++;
             const to_ = this.board.tiles[move.move.to.index];
+            to_.moved++;
             to_.code = from_.code;
             from_.code = piece_js_1.Type.none;
         }
@@ -360,6 +364,7 @@ class Mover {
         const from = this.board.tiles[move.from.index];
         const to = this.board.tiles[move.to.index];
         from.moved--;
+        to.moved--;
         if (!from.moved) {
             if (from.isType(piece_js_1.Type.king)) {
                 if (from.isColor(piece_js_1.Color.white)) {
@@ -397,6 +402,8 @@ class Mover {
         if (move.move) {
             const from_ = this.board.tiles[move.move.from.index];
             const to_ = this.board.tiles[move.move.to.index];
+            from_.moved--;
+            to_.moved--;
             to_.code = move.move.to.color | move.move.to.type;
             from_.code = move.move.from.color | move.move.from.type;
         }

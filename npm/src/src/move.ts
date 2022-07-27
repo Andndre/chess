@@ -1,10 +1,12 @@
 import { Board } from '../mod.js';
+import { Type } from './piece.js';
 import { TileInfo } from './types.js';
 
 export class Move {
 	from: TileInfo;
 	to: TileInfo;
 	capture?: TileInfo;
+	promoteTo?: Type;
 	move?: Move;
 	check?: number;
 	constructor(
@@ -12,6 +14,7 @@ export class Move {
 		fromIndex: number,
 		toIndex: number,
 		captureIndex?: number,
+		promoteTo?: Type,
 		move?: { fromIndex: number; toIndex: number },
 		checkIndex?: number
 	) {
@@ -21,6 +24,9 @@ export class Move {
 			type: t[fromIndex].getType(),
 			index: fromIndex,
 		};
+		if (promoteTo) {
+			this.promoteTo = promoteTo;
+		}
 		this.to = {
 			color: t[toIndex].getColor(),
 			type: t[toIndex].getType(),
@@ -40,9 +46,5 @@ export class Move {
 		if (checkIndex) {
 			this.check = checkIndex;
 		}
-	}
-
-	isPromote() {
-		return this.from.color !== this.to.color;
 	}
 }

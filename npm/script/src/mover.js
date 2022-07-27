@@ -274,6 +274,9 @@ class Mover {
             to_.code = from_.code;
             from_.code = piece_js_1.Type.none;
         }
+        if (move.promoteTo) {
+            to.code = to.getColor() | move.promoteTo;
+        }
         to.code = from.code;
         from.code = piece_js_1.Type.none;
         this.current = this.current == piece_js_1.Color.white ? piece_js_1.Color.black : piece_js_1.Color.white;
@@ -316,8 +319,7 @@ class Mover {
             }
         }
         this.history.push(move);
-        if (move.from.type === piece_js_1.Type.pawn &&
-            (0, coordinates_js_1.getCoords)(move.to.index).y === (move.from.color === piece_js_1.Color.white ? 0 : 7)) {
+        if (move.promoteTo) {
             if (!justATest) {
                 if (move.from.color === piece_js_1.Color.white)
                     this.chessGame.onWhitePromote();
@@ -325,10 +327,10 @@ class Mover {
                     this.chessGame.onBlackPromote();
                 }
             }
-            // if not handled yet, promote to a queen
-            if (this.board.tiles[move.to.index].getType() === piece_js_1.Type.pawn) {
-                this.board.tiles[move.to.index].code = piece_js_1.Type.queen | move.from.color;
-            }
+            // // if not handled yet, promote to a queen
+            // if (this.board.tiles[move.to.index].getType() === Type.pawn) {
+            // 	this.board.tiles[move.to.index].code = Type.queen | move.from.color;
+            // }
         }
         // run CallBack
         if (!justATest) {
@@ -546,7 +548,7 @@ class Mover {
      * @returns - true if the move is in the {insertIf} array
      */
     __insertIf__({ move, moves, insertIf = ['enemy', 'none'], }) {
-        function pushPromote(board) {
+        function pushPromote(board, capture) {
             if (move.from.type === piece_js_1.Type.pawn) {
                 const { y } = (0, coordinates_js_1.getCoords)(move.to.index);
                 const edgeOrdinate = move.from.color === piece_js_1.Color.white ? 0 : 7;
@@ -557,8 +559,7 @@ class Mover {
                         piece_js_1.Type.bishop,
                         piece_js_1.Type.knight,
                     ]) {
-                        const newMove = new move_js_1.Move(board, move.from.index, move.to.index);
-                        newMove.to.type = type;
+                        const newMove = new move_js_1.Move(board, move.from.index, move.to.index, capture, type);
                         moves.push(newMove);
                     }
                     return true;
@@ -572,13 +573,13 @@ class Mover {
         const colorTo = pieceTo.getColor();
         if (piece_js_1.Piece.invertColor(color) == colorTo) {
             if (insertIf.indexOf('enemy') != constants_js_1.NONE) {
+                if (pushPromote(this.board, pieceTo.index))
+                    return true;
                 move.capture = {
                     color: colorTo,
                     index: pieceTo.index,
                     type: pieceTo.getType(),
                 };
-                if (pushPromote(this.board))
-                    return true;
                 moves.push(move);
                 return true;
             }
@@ -593,12 +594,6 @@ class Mover {
             }
             return false;
         }
-        // if (insertIf.indexOf('friend') != NONE) {
-        // 	console.log('never gonna called');
-        // 	if (pushPromote(this.board)) return true;
-        // 	moves.push(move);
-        // 	return true;
-        // }
         return false;
     }
     /**
@@ -784,14 +779,14 @@ class Mover {
             return result;
         // Queen's side
         if (!obj.board.tiles[kingIndex - 4].moved) {
-            result.push(new move_js_1.Move(obj.board, kingIndex, kingIndex - 2, undefined, {
+            result.push(new move_js_1.Move(obj.board, kingIndex, kingIndex - 2, undefined, undefined, {
                 fromIndex: kingIndex - 4,
                 toIndex: kingIndex - 1,
             }));
         }
         // King's side
         if (!obj.board.tiles[kingIndex + 3].moved) {
-            result.push(new move_js_1.Move(obj.board, kingIndex, kingIndex + 2, undefined, {
+            result.push(new move_js_1.Move(obj.board, kingIndex, kingIndex + 2, undefined, undefined, {
                 fromIndex: kingIndex + 3,
                 toIndex: kingIndex + 1,
             }));

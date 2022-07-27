@@ -1,5 +1,5 @@
 export class Move {
-    constructor(board, fromIndex, toIndex, captureIndex, move, checkIndex) {
+    constructor(board, fromIndex, toIndex, captureIndex, promoteTo, move, checkIndex) {
         Object.defineProperty(this, "from", {
             enumerable: true,
             configurable: true,
@@ -13,6 +13,12 @@ export class Move {
             value: void 0
         });
         Object.defineProperty(this, "capture", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "promoteTo", {
             enumerable: true,
             configurable: true,
             writable: true,
@@ -36,6 +42,9 @@ export class Move {
             type: t[fromIndex].getType(),
             index: fromIndex,
         };
+        if (promoteTo) {
+            this.promoteTo = promoteTo;
+        }
         this.to = {
             color: t[toIndex].getColor(),
             type: t[toIndex].getType(),
@@ -55,8 +64,5 @@ export class Move {
         if (checkIndex) {
             this.check = checkIndex;
         }
-    }
-    isPromote() {
-        return this.from.color !== this.to.color;
     }
 }

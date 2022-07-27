@@ -271,6 +271,9 @@ export class Mover {
             to_.code = from_.code;
             from_.code = Type.none;
         }
+        if (move.promoteTo) {
+            to.code = to.getColor() | move.promoteTo;
+        }
         to.code = from.code;
         from.code = Type.none;
         this.current = this.current == Color.white ? Color.black : Color.white;
@@ -313,8 +316,7 @@ export class Mover {
             }
         }
         this.history.push(move);
-        if (move.from.type === Type.pawn &&
-            getCoords(move.to.index).y === (move.from.color === Color.white ? 0 : 7)) {
+        if (move.promoteTo) {
             if (!justATest) {
                 if (move.from.color === Color.white)
                     this.chessGame.onWhitePromote();
@@ -322,10 +324,10 @@ export class Mover {
                     this.chessGame.onBlackPromote();
                 }
             }
-            // if not handled yet, promote to a queen
-            if (this.board.tiles[move.to.index].getType() === Type.pawn) {
-                this.board.tiles[move.to.index].code = Type.queen | move.from.color;
-            }
+            // // if not handled yet, promote to a queen
+            // if (this.board.tiles[move.to.index].getType() === Type.pawn) {
+            // 	this.board.tiles[move.to.index].code = Type.queen | move.from.color;
+            // }
         }
         // run CallBack
         if (!justATest) {
@@ -543,7 +545,7 @@ export class Mover {
      * @returns - true if the move is in the {insertIf} array
      */
     __insertIf__({ move, moves, insertIf = ['enemy', 'none'], }) {
-        function pushPromote(board) {
+        function pushPromote(board, capture) {
             if (move.from.type === Type.pawn) {
                 const { y } = getCoords(move.to.index);
                 const edgeOrdinate = move.from.color === Color.white ? 0 : 7;
@@ -554,8 +556,7 @@ export class Mover {
                         Type.bishop,
                         Type.knight,
                     ]) {
-                        const newMove = new Move(board, move.from.index, move.to.index);
-                        newMove.to.type = type;
+                        const newMove = new Move(board, move.from.index, move.to.index, capture, type);
                         moves.push(newMove);
                     }
                     return true;
@@ -569,13 +570,13 @@ export class Mover {
         const colorTo = pieceTo.getColor();
         if (Piece.invertColor(color) == colorTo) {
             if (insertIf.indexOf('enemy') != NONE) {
+                if (pushPromote(this.board, pieceTo.index))
+                    return true;
                 move.capture = {
                     color: colorTo,
                     index: pieceTo.index,
                     type: pieceTo.getType(),
                 };
-                if (pushPromote(this.board))
-                    return true;
                 moves.push(move);
                 return true;
             }
@@ -590,12 +591,6 @@ export class Mover {
             }
             return false;
         }
-        // if (insertIf.indexOf('friend') != NONE) {
-        // 	console.log('never gonna called');
-        // 	if (pushPromote(this.board)) return true;
-        // 	moves.push(move);
-        // 	return true;
-        // }
         return false;
     }
     /**
@@ -781,14 +776,14 @@ export class Mover {
             return result;
         // Queen's side
         if (!obj.board.tiles[kingIndex - 4].moved) {
-            result.push(new Move(obj.board, kingIndex, kingIndex - 2, undefined, {
+            result.push(new Move(obj.board, kingIndex, kingIndex - 2, undefined, undefined, {
                 fromIndex: kingIndex - 4,
                 toIndex: kingIndex - 1,
             }));
         }
         // King's side
         if (!obj.board.tiles[kingIndex + 3].moved) {
-            result.push(new Move(obj.board, kingIndex, kingIndex + 2, undefined, {
+            result.push(new Move(obj.board, kingIndex, kingIndex + 2, undefined, undefined, {
                 fromIndex: kingIndex + 3,
                 toIndex: kingIndex + 1,
             }));

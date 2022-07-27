@@ -27,5 +27,6 @@ export function randomFromArray<T>(array: T[]) {
 }
 
 export function lastElementInAnArray<T>(array: T[]) {
+	if (!array.length) return undefined;
 	return array[array.length - 1];
 }

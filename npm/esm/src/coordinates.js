@@ -1,3 +1,4 @@
+import { Piece } from './piece.js';
 /**
  * Given an index, return the x and y coordinates of the index in a chess board.
  * @param {number} index - The index of the square you want to get the coordinates of.
@@ -24,7 +25,22 @@ export function getIndex(x, y) {
  * convert `a8` to 0, `b8` to 1, etc
  */
 export function getIndexFromChessNotation(notation) {
-    const x = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    const y = ['8', '7', '6', '5', '4', '3', '2', '1'];
-    return getIndex(x.indexOf(notation.charAt(0)), y.indexOf(notation.charAt(1)));
+    const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const files = ['8', '7', '6', '5', '4', '3', '2', '1'];
+    return getIndex(ranks.indexOf(notation.charAt(0)), files.indexOf(notation.charAt(1)));
+}
+export function getChessNotationFromIndex(index) {
+    const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const files = ['8', '7', '6', '5', '4', '3', '2', '1'];
+    const { x, y } = getCoords(index);
+    return ranks[x] + files[y];
+}
+export function getChessNotationFromMove(move) {
+    let capture = '';
+    if (move.capture) {
+        capture = new Piece(-1, move.capture.type | move.capture.color).toString();
+    }
+    return (getChessNotationFromIndex(move.from.index) +
+        getChessNotationFromIndex(move.to.index) +
+        capture);
 }

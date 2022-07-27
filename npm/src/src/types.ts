@@ -6,13 +6,13 @@ export type TileInfo = {
 	color: Color;
 };
 
-export type Move = {
-	from: TileInfo;
-	to: TileInfo;
-	capture?: TileInfo;
-	move?: Move;
-	check?: number;
-};
+// export type Move = {
+// 	from: TileInfo;
+// 	to: TileInfo;
+// 	capture?: TileInfo;
+// 	move?: Move;
+// 	check?: number;
+// };
 
 export type CellStatus = 'enemy' | 'none' | 'friend';
 

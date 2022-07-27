@@ -1,17 +1,22 @@
-# Chess-Typescript
-
-## ⚠️ Do not use it. This is a very experimental project.
+<div style="display:flex; flex-direction: column; align-items: center; margin-bottom: 40px">
+	<h1 style="text-align: center"> Chess-Typescript </h1>
+	<div style="display:flex; gap: 10px">
+		<a href="https://github.com/Andndre/chess/blob/main/LICENCE.txt"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"/></a>
+		<a href="https://github.com/Andndre/chess"> <img src="https://tokei.rs/b1/github/Andndre/chess"/> </a>
+		<a href="https://github.com/Andndre/chess"> <img src="https://tokei.rs/b1/github/Andndre/chess?category=files"/> </a>
+	</div>
+</div>
 
 A minimal Chess Engine fully written in Typescript.
 
-- All moves in chess
-- Move validation
-- FEN support
-- The board is a single-dimensional array.
-- Move history
-- Fifty-Move rule (Can be turned off)
-- Super basic AI
-- Scalable
+- [X] All moves in chess
+- [X] Move validation
+- [X] FEN support
+- [X] The board is a single-dimensional array (`chessGame.board.tiles`)
+- [X] Move history
+- [X] Fifty-Move rule (can be turned off)
+- [X] Scalable
+- [ ] Challenging AI
 
 ### **Usage**:
 - **DENO**

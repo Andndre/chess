@@ -4,13 +4,6 @@ export declare type TileInfo = {
     type: Type;
     color: Color;
 };
-export declare type Move = {
-    from: TileInfo;
-    to: TileInfo;
-    capture?: TileInfo;
-    move?: Move;
-    check?: number;
-};
 export declare type CellStatus = 'enemy' | 'none' | 'friend';
 export declare type Vector = {
     x: number;

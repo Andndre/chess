@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMoveScore = exports.getPieceScore = void 0;
+exports.getPieceScore = void 0;
 const piece_js_1 = require("../../piece.js");
 const getPieceScore = (type) => {
     switch (type) {
@@ -21,7 +21,3 @@ const getPieceScore = (type) => {
     }
 };
 exports.getPieceScore = getPieceScore;
-const getMoveScore = (move) => {
-    return (0, exports.getPieceScore)(move.to.type);
-};
-exports.getMoveScore = getMoveScore;

@@ -1,7 +1,8 @@
 import { Board } from './board.js';
 import { ChessGame } from './chessGame.js';
 import { Color, Type } from './piece.js';
-import { CellStatus, Move } from './types.js';
+import { CellStatus } from './types.js';
+import { Move } from './move.js';
 export declare class Mover {
     board: Board;
     current: Color.white | Color.black;
@@ -166,13 +167,6 @@ export declare class Mover {
         moves: Move[];
         insertIf?: CellStatus[];
     }): boolean;
-    /**
-     * Convert fromIndex and toIndex (and optionally capture?: number; move?: Move;) to a Move object
-     */
-    getMove(fromIndex: number, toIndex: number, options?: {
-        capture?: number;
-        move?: Move;
-    }): Move;
     /**
      * The function returns an array of possible moves for a pawn
      */

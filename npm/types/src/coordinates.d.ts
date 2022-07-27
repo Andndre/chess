@@ -1,4 +1,5 @@
 import { Vector } from './types.js';
+import { Move } from './move.js';
 /**
  * Given an index, return the x and y coordinates of the index in a chess board.
  * @param {number} index - The index of the square you want to get the coordinates of.
@@ -16,3 +17,5 @@ export declare function getIndex(x: number, y: number): number;
  * convert `a8` to 0, `b8` to 1, etc
  */
 export declare function getIndexFromChessNotation(notation: string): number;
+export declare function getChessNotationFromIndex(index: number): string;
+export declare function getChessNotationFromMove(move: Move): string;

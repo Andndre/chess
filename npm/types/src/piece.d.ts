@@ -81,5 +81,6 @@ export declare class Piece {
      * @returns A string representation of the piece.
      */
     toString(): string;
+    static getStringFromCode(): void;
     getChessSymbol(): " " | "♗" | "♝" | "♔" | "♚" | "♘" | "♞" | "♙" | "♟" | "♕" | "♛" | "♖" | "♜";
 }

@@ -17,6 +17,3 @@ export const getPieceScore = (type) => {
             return 0;
     }
 };
-export const getMoveScore = (move) => {
-    return getPieceScore(move.to.type);
-};

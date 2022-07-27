@@ -170,6 +170,7 @@ class Piece {
         }
         return char;
     }
+    static getStringFromCode() { }
     getChessSymbol() {
         const white = this.isColor(Color.white);
         switch (this.getType()) {

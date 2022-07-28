@@ -233,12 +233,12 @@ export class Mover {
 			from_.code = Type.none;
 		}
 
+		to.code = from.code;
+		from.code = Type.none;
+
 		if (move.promoteTo) {
 			to.code = to.getColor() | move.promoteTo;
 		}
-
-		to.code = from.code;
-		from.code = Type.none;
 
 		this.current = this.current == Color.white ? Color.black : Color.white;
 
@@ -280,23 +280,17 @@ export class Mover {
 
 		this.history.push(move);
 
-		if (move.promoteTo) {
-			if (!justATest) {
-				if (move.from.color === Color.white) this.chessGame.onWhitePromote();
-				else {
-					this.chessGame.onBlackPromote();
-				}
-			}
-			// // if not handled yet, promote to a queen
-			// if (this.board.tiles[move.to.index].getType() === Type.pawn) {
-			// 	this.board.tiles[move.to.index].code = Type.queen | move.from.color;
-			// }
-		}
 		// run CallBack
 		if (!justATest) {
 			this.chessGame.onMove();
 			if (move.move) {
 				this.chessGame.onCastle();
+			}
+			if (move.promoteTo) {
+				if (move.from.color === Color.white) this.chessGame.onWhitePromote();
+				else {
+					this.chessGame.onBlackPromote();
+				}
 			}
 		}
 	}

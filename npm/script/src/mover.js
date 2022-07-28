@@ -360,8 +360,8 @@ class Mover {
         fromTile.moved--;
         toTile.moved--;
         if (!fromTile.moved) {
-            if (fromTile.isType(piece_js_1.Type.king)) {
-                if (fromTile.isColor(piece_js_1.Color.white)) {
+            if (lastMove.from.type === piece_js_1.Type.king) {
+                if (lastMove.from.color === piece_js_1.Color.white) {
                     this.Q = true;
                     this.K = true;
                 }
@@ -370,22 +370,22 @@ class Mover {
                     this.k = true;
                 }
             }
-        }
-        else if (fromTile.isType(piece_js_1.Type.rook)) {
-            if (fromTile.isColor(piece_js_1.Color.white)) {
-                if (fromTile.index % 8 === 7) {
-                    this.K = true;
+            else if (lastMove.from.type === piece_js_1.Type.rook) {
+                if (lastMove.from.color === piece_js_1.Color.white) {
+                    if (fromTile.index % 8 === 7) {
+                        this.K = true;
+                    }
+                    else {
+                        this.Q = true;
+                    }
                 }
                 else {
-                    this.Q = true;
-                }
-            }
-            else {
-                if (fromTile.index % 7 === 0) {
-                    this.k = true;
-                }
-                else {
-                    this.q = true;
+                    if (fromTile.index % 7 === 0) {
+                        this.k = true;
+                    }
+                    else {
+                        this.q = true;
+                    }
                 }
             }
         }
@@ -469,16 +469,20 @@ class Mover {
             return false;
         }
         if (move.from.type === piece_js_1.Type.king) {
-            kingIndex = move.to.index;
-            if (Math.abs(move.from.index - move.to.index) === constants_js_1.RIGHT * 2) {
-                if (move.from.index - move.move.from.index === 3) {
-                    if (!this.board.tiles[move.move.from.index + 1].isType(piece_js_1.Type.none))
+            // if castling
+            if (move.move) {
+                const offset = move.to.index - move.from.index;
+                const sign = offset / Math.abs(offset);
+                const range = sign === 1 ? 2 : 3;
+                for (let i = 1; i <= range; i++) {
+                    if (!this.board.tiles[kingIndex + i * sign].isType(piece_js_1.Type.none))
                         return false;
                 }
                 const mid = (move.from.index + move.to.index) / 2;
-                if (this.isAttacked(mid))
+                if (this.isAttacked(mid) || this.isAttacked(move.to.index))
                     return false;
             }
+            kingIndex = move.to.index;
         }
         this.moveTest(move);
         const isAttacked = this.isAttacked(kingIndex);
@@ -767,23 +771,39 @@ class Mover {
         const kingIndex = color === piece_js_1.Color.white ? 60 : 4;
         // const currentKingIndex = obj.getKingIndex(color);
         // castle
-        if (kingIndex !== from || obj.board.tiles[kingIndex].moved)
+        if (kingIndex !== from)
             return result;
         if (obj.getLastMove()?.check)
             return result;
         // Queen's side
-        if (!obj.board.tiles[kingIndex - 4].moved) {
-            result.push(new move_js_1.Move(obj.board, kingIndex, kingIndex - 2, undefined, undefined, {
-                fromIndex: kingIndex - 4,
-                toIndex: kingIndex - 1,
-            }));
+        if (!obj.board.tiles[kingIndex].moved &&
+            !obj.board.tiles[kingIndex - 4].moved &&
+            color === piece_js_1.Color.white
+            ? obj.Q
+            : obj.q) {
+            obj.__insertIf__({
+                move: new move_js_1.Move(obj.board, kingIndex, kingIndex - 2, undefined, undefined, {
+                    fromIndex: kingIndex - 4,
+                    toIndex: kingIndex - 1,
+                }),
+                moves: result,
+                insertIf: ['none'],
+            });
         }
         // King's side
-        if (!obj.board.tiles[kingIndex + 3].moved) {
-            result.push(new move_js_1.Move(obj.board, kingIndex, kingIndex + 2, undefined, undefined, {
-                fromIndex: kingIndex + 3,
-                toIndex: kingIndex + 1,
-            }));
+        if (!obj.board.tiles[kingIndex].moved &&
+            !obj.board.tiles[kingIndex + 3].moved &&
+            color === piece_js_1.Color.white
+            ? obj.K
+            : obj.k) {
+            obj.__insertIf__({
+                move: new move_js_1.Move(obj.board, kingIndex, kingIndex + 2, undefined, undefined, {
+                    fromIndex: kingIndex + 3,
+                    toIndex: kingIndex + 1,
+                }),
+                moves: result,
+                insertIf: ['none'],
+            });
         }
         return result;
     }
@@ -900,16 +920,28 @@ class Mover {
                 }
             }
         }
-        // use default
-        // if (fenComponents.length < 4) return;
-        // const enpassantTarget = fenComponents[3];
-        // if (enpassantTarget !== '-') {
-        // 	const x = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].indexOf(
-        // 		enpassantTarget.charAt(0)
-        // 	);
-        // 	const y = 8 - parseInt(enpassantTarget.charAt(1));
-        // 	const enpassantTargetIndex = getIndex(x, y);
-        // }
+        if (!this.K || !this.Q) {
+            if (!this.K && !this.Q) {
+                this.board.tiles[60].moved++;
+            }
+            if (!this.K) {
+                this.board.tiles[63].moved++;
+            }
+            if (!this.Q) {
+                this.board.tiles[56].moved++;
+            }
+        }
+        if (!this.k || !this.q) {
+            if (!this.k && !this.q) {
+                this.board.tiles[4].moved++;
+            }
+            if (!this.k) {
+                this.board.tiles[7].moved++;
+            }
+            if (!this.q) {
+                this.board.tiles[0].moved++;
+            }
+        }
     }
 }
 exports.Mover = Mover;

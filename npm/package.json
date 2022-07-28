@@ -1,30 +1,30 @@
 {
-  "module": "./esm/mod.js",
-  "main": "./script/mod.js",
-  "types": "./types/mod.d.ts",
-  "name": "chess_typescript",
-  "version": "0.2.7",
-  "description": "Your package.",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Andndre/chess.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Andndre/chess/issues"
-  },
-  "exports": {
-    ".": {
-      "import": "./esm/mod.js",
-      "require": "./script/mod.js",
-      "types": "./types/mod.d.ts"
-    }
-  },
-  "scripts": {
-    "test": "node test_runner.js"
-  },
-  "devDependencies": {
-    "@types/node": "16.11.37",
-    "chalk": "4.1.2"
-  }
+	"module": "./esm/mod.js",
+	"main": "./script/mod.js",
+	"types": "./types/mod.d.ts",
+	"name": "chess_typescript",
+	"version": "0.2.8",
+	"description": "Your package.",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Andndre/chess.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Andndre/chess/issues"
+	},
+	"exports": {
+		".": {
+			"import": "./esm/mod.js",
+			"require": "./script/mod.js",
+			"types": "./types/mod.d.ts"
+		}
+	},
+	"scripts": {
+		"test": "node test_runner.js"
+	},
+	"devDependencies": {
+		"@types/node": "16.11.37",
+		"chalk": "4.1.2"
+	}
 }

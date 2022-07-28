@@ -44,8 +44,10 @@ function getChessNotationFromIndex(index) {
 exports.getChessNotationFromIndex = getChessNotationFromIndex;
 function getChessNotationFromMove(move) {
     let capture = '';
-    if (move.capture) {
-        capture = new piece_js_1.Piece(-1, move.capture.type | move.capture.color).toString();
+    if (move.promoteTo) {
+        capture = new piece_js_1.Piece(-1, move.from.color | move.promoteTo)
+            .toString()
+            .toLowerCase();
     }
     return (getChessNotationFromIndex(move.from.index) +
         getChessNotationFromIndex(move.to.index) +

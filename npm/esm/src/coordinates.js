@@ -37,8 +37,10 @@ export function getChessNotationFromIndex(index) {
 }
 export function getChessNotationFromMove(move) {
     let capture = '';
-    if (move.capture) {
-        capture = new Piece(-1, move.capture.type | move.capture.color).toString();
+    if (move.promoteTo) {
+        capture = new Piece(-1, move.from.color | move.promoteTo)
+            .toString()
+            .toLowerCase();
     }
     return (getChessNotationFromIndex(move.from.index) +
         getChessNotationFromIndex(move.to.index) +

@@ -274,11 +274,11 @@ class Mover {
             to_.code = from_.code;
             from_.code = piece_js_1.Type.none;
         }
+        to.code = from.code;
+        from.code = piece_js_1.Type.none;
         if (move.promoteTo) {
             to.code = to.getColor() | move.promoteTo;
         }
-        to.code = from.code;
-        from.code = piece_js_1.Type.none;
         this.current = this.current == piece_js_1.Color.white ? piece_js_1.Color.black : piece_js_1.Color.white;
         if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 100) {
             this.chessGame.gameOver = true;
@@ -319,24 +319,18 @@ class Mover {
             }
         }
         this.history.push(move);
-        if (move.promoteTo) {
-            if (!justATest) {
-                if (move.from.color === piece_js_1.Color.white)
-                    this.chessGame.onWhitePromote();
-                else {
-                    this.chessGame.onBlackPromote();
-                }
-            }
-            // // if not handled yet, promote to a queen
-            // if (this.board.tiles[move.to.index].getType() === Type.pawn) {
-            // 	this.board.tiles[move.to.index].code = Type.queen | move.from.color;
-            // }
-        }
         // run CallBack
         if (!justATest) {
             this.chessGame.onMove();
             if (move.move) {
                 this.chessGame.onCastle();
+            }
+            if (move.promoteTo) {
+                if (move.from.color === piece_js_1.Color.white)
+                    this.chessGame.onWhitePromote();
+                else {
+                    this.chessGame.onBlackPromote();
+                }
             }
         }
     }

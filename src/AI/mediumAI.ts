@@ -14,8 +14,11 @@ export class MediumAI implements BaseAI {
 			for (const move of this.chessGame.mover.allMoves[index]) {
 				const prevAllMoves = [...this.chessGame.mover.allMoves];
 				this.chessGame.mover.moveTest(move);
-				this.chessGame.mover.next();
-				const current = minimax(this.chessGame, 3, 0, 0, true);
+				let current = 0;
+				if (!this.chessGame.gameOver) {
+					this.chessGame.mover.next();
+					current = minimax(this.chessGame, 2);
+				}
 				this.chessGame.mover.undoMove(true);
 				this.chessGame.mover.allMoves = prevAllMoves;
 				if (current > maxScore) {

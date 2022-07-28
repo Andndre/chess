@@ -1,6 +1,6 @@
 import { Board } from './board.ts';
 import { ChessGame } from './chessGame.ts';
-import { directionOffsets, DOWN, NONE, RIGHT, UP } from './constants.ts';
+import { directionOffsets, DOWN, NONE, UP } from './constants.ts';
 import {
 	getCoords,
 	getIndex,

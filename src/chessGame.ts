@@ -6,7 +6,6 @@ export class ChessGame {
 	board: Board;
 	mover: Mover;
 	gameOver = false;
-	fiftyMoveRule: boolean;
 	gameOverReason: GameOverReason = 'not true';
 	onMove: CallBackFunction = () => {};
 	onUndo: CallBackFunction = () => {};
@@ -15,10 +14,9 @@ export class ChessGame {
 	onBlackPromote: CallBackFunction = () => {};
 	onCastle: CallBackFunction = () => {};
 	onGameOver: CallBackFunction = () => {};
-	private constructor(fen: string, fiftyMoveRuleEnabled = true) {
+	private constructor(fen: string) {
 		this.board = new Board();
 		this.mover = new Mover(this.board, this, fen);
-		this.fiftyMoveRule = fiftyMoveRuleEnabled;
 	}
 
 	static newStandardGame() {

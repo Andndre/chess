@@ -1,7 +1,7 @@
 import { Board } from './board.js';
 import { Mover } from './mover.js';
 export class ChessGame {
-    constructor(fen, fiftyMoveRuleEnabled = true) {
+    constructor(fen) {
         Object.defineProperty(this, "board", {
             enumerable: true,
             configurable: true,
@@ -19,12 +19,6 @@ export class ChessGame {
             configurable: true,
             writable: true,
             value: false
-        });
-        Object.defineProperty(this, "fiftyMoveRule", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
         });
         Object.defineProperty(this, "gameOverReason", {
             enumerable: true,
@@ -76,7 +70,6 @@ export class ChessGame {
         });
         this.board = new Board();
         this.mover = new Mover(this.board, this, fen);
-        this.fiftyMoveRule = fiftyMoveRuleEnabled;
     }
     static newStandardGame() {
         return new ChessGame('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');

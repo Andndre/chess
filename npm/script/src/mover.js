@@ -280,12 +280,6 @@ class Mover {
             to.code = to.getColor() | move.promoteTo;
         }
         this.current = this.current == piece_js_1.Color.white ? piece_js_1.Color.black : piece_js_1.Color.white;
-        if (this.chessGame.fiftyMoveRule && this.halfMoveClock() === 100) {
-            this.chessGame.gameOver = true;
-            this.chessGame.gameOverReason = 'draw';
-            if (!justATest)
-                this.chessGame.onGameOver();
-        }
         if (this.isCheck()) {
             const kingIndex = this.getKingIndex(this.current);
             move.check = kingIndex;
@@ -319,6 +313,18 @@ class Mover {
             }
         }
         this.history.push(move);
+        let draw = true;
+        for (let i = 0; i < 64; i++) {
+            const type = this.board.tiles[i].getType();
+            if (type === piece_js_1.Type.king || type == piece_js_1.Type.none) {
+                draw = false;
+                break;
+            }
+        }
+        if (draw) {
+            this.chessGame.gameOver = true;
+            this.chessGame.gameOverReason = 'draw';
+        }
         // run CallBack
         if (!justATest) {
             this.chessGame.onMove();
@@ -331,6 +337,9 @@ class Mover {
                 else {
                     this.chessGame.onBlackPromote();
                 }
+            }
+            if (this.chessGame.gameOver) {
+                this.chessGame.onGameOver();
             }
         }
     }

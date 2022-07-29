@@ -14,7 +14,6 @@ A minimal Chess Engine fully written in Typescript.
 - [X] FEN support
 - [X] The board is a single-dimensional array (`chessGame.board.tiles`)
 - [X] Move history
-- [X] Fifty-Move rule (can be turned off)
 - [X] Scalable
 - [ ] Challenging AI
 

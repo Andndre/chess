@@ -5,7 +5,6 @@ export declare class ChessGame {
     board: Board;
     mover: Mover;
     gameOver: boolean;
-    fiftyMoveRule: boolean;
     gameOverReason: GameOverReason;
     onMove: CallBackFunction;
     onUndo: CallBackFunction;

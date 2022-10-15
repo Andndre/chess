@@ -302,14 +302,16 @@ class Mover {
                 }
             }
         }
-        if (move.from.type === piece_js_1.Type.king) {
-            if (move.from.color === piece_js_1.Color.white) {
-                this.K = false;
-                this.Q = false;
-            }
-            else {
-                this.k = false;
-                this.q = false;
+        if (justATest) {
+            if (move.from.type === piece_js_1.Type.king) {
+                if (move.from.color === piece_js_1.Color.white) {
+                    this.K = false;
+                    this.Q = false;
+                }
+                else {
+                    this.k = false;
+                    this.q = false;
+                }
             }
         }
         this.history.push(move);

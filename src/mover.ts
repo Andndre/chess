@@ -262,13 +262,15 @@ export class Mover {
 				}
 			}
 		}
-		if (move.from.type === Type.king) {
-			if (move.from.color === Color.white) {
-				this.K = false;
-				this.Q = false;
-			} else {
-				this.k = false;
-				this.q = false;
+		if (justATest) {
+			if (move.from.type === Type.king) {
+				if (move.from.color === Color.white) {
+					this.K = false;
+					this.Q = false;
+				} else {
+					this.k = false;
+					this.q = false;
+				}
 			}
 		}
 
